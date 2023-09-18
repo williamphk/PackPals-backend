@@ -20,6 +20,46 @@ export async function connectToDatabase() {
 
   const db: mongoDB.Db = client.db(process.env.DB_NAME);
 
+  await db.command({
+    collMod: process.env.USERS_COLLECTION_NAME,
+    validator: {
+      $jsonSchema: {
+        bsonType: "object",
+        required: [
+          "first_name",
+          "last_name",
+          "email",
+          "hashed_password",
+          "created_date",
+        ],
+        additionalProperties: false,
+        properties: {
+          _id: {},
+          first_name: {
+            bsonType: "string",
+            description: "'first_name' is required and is a string",
+          },
+          last_name: {
+            bsonType: "string",
+            description: "'last_name' is required and is a string",
+          },
+          email: {
+            bsonType: "string",
+            description: "'email' is required and is a string",
+          },
+          hashed_password: {
+            bsonType: "string",
+            description: "'password' is required and is a string",
+          },
+          created_date: {
+            bsonType: "date",
+            description: "'created_date' is required and is a date",
+          },
+        },
+      },
+    },
+  });
+
   const usersCollection: mongoDB.Collection = db.collection(
     process.env.USERS_COLLECTION_NAME
   );

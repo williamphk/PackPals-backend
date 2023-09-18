@@ -48,6 +48,45 @@ function connectToDatabase() {
         const client = new mongoDB.MongoClient(process.env.DB_CONN_STRING);
         yield client.connect();
         const db = client.db(process.env.DB_NAME);
+        yield db.command({
+            collMod: process.env.USERS_COLLECTION_NAME,
+            validator: {
+                $jsonSchema: {
+                    bsonType: "object",
+                    required: [
+                        "first_name",
+                        "last_name",
+                        "email",
+                        "hashed_password",
+                        "created_date",
+                    ],
+                    additionalProperties: false,
+                    properties: {
+                        _id: {},
+                        first_name: {
+                            bsonType: "string",
+                            description: "'first_name' is required and is a string",
+                        },
+                        last_name: {
+                            bsonType: "string",
+                            description: "'last_name' is required and is a string",
+                        },
+                        email: {
+                            bsonType: "string",
+                            description: "'email' is required and is a string",
+                        },
+                        hashed_password: {
+                            bsonType: "string",
+                            description: "'password' is required and is a string",
+                        },
+                        created_date: {
+                            bsonType: "date",
+                            description: "'created_date' is required and is a date",
+                        },
+                    },
+                },
+            },
+        });
         const usersCollection = db.collection(process.env.USERS_COLLECTION_NAME);
         exports.collections.users = usersCollection;
         console.log(`Successfully connected to database: ${db.databaseName} and collection: ${usersCollection.collectionName}`);
