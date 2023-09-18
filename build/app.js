@@ -10,7 +10,7 @@ const app = (0, express_1.default)();
 const PORT = 3001;
 (0, database_service_1.connectToDatabase)()
     .then(() => {
-    app.use("/games", users_router_1.usersRouter);
+    app.use("/users", users_router_1.usersRouter);
     app.listen(PORT, () => {
         console.log(`Server started at http://localhost:${PORT}`);
     });
