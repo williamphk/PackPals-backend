@@ -4,8 +4,8 @@
   "description": "An application to match users for doing grocery",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node ./build/app.js"
+    "start": "tsc && node dist/app.js",
+    "dev": "nodemon - exec 'ts-node' src/app.ts"
   },
   "repository": {
     "type": "git",
@@ -28,6 +28,8 @@
   "devDependencies": {
     "@types/express": "^4.17.17",
     "@types/node": "^20.6.2",
+    "nodemon": "^3.0.1",
+    "ts-node": "^10.9.1",
     "typescript": "^5.2.2"
   }
 }
