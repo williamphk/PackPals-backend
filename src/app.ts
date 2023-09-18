@@ -8,7 +8,7 @@ const PORT: number = 3001;
 
 connectToDatabase()
   .then(() => {
-    app.use("/games", usersRouter);
+    app.use("/users", usersRouter);
 
     app.listen(PORT, () => {
       console.log(`Server started at http://localhost:${PORT}`);
