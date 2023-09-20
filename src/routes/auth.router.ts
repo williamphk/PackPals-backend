@@ -2,6 +2,7 @@
 import express, { Request, Response } from "express";
 import { ObjectId } from "mongodb";
 const bcrypt = require("bcryptjs");
+const jwt = require("jsonwebtoken");
 import { collections } from "../services/database.service";
 import User from "../models/user";
 
@@ -40,3 +41,40 @@ authRouter.post("/register", async (req: Request, res: Response) => {
 });
 
 // LOGIN
+authRouter.post("/login", async (req, res) => {
+  try {
+    const { email, password } = req.body;
+
+    if (!collections.users) {
+      res.status(500).send("Users collection not initialized");
+      return;
+    }
+
+    const user = (await collections.users.findOne({
+      email: email,
+    })) as User | null;
+
+    if (!user) {
+      return res.status(400).json({ message: "Invalid email or password" });
+    }
+
+    const passwordMatch = await bcrypt.compare(password, user.hashed_password);
+
+    if (!passwordMatch) {
+      return res.status(400).json({ message: "Invalid email or password" });
+    }
+
+    const token = jwt.sign({ email: user.email }, process.env.JWT_SECRET, {
+      expiresIn: "1h",
+    });
+
+    res.json({ message: "Logged in successfully", token });
+  } catch (error) {
+    if (error instanceof Error) {
+      console.error(error);
+      res.status(500).send(error.message);
+    } else {
+      res.status(500).send("An unexpected error occurred");
+    }
+  }
+});
