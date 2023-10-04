@@ -6,7 +6,7 @@ require("dotenv").config();
 import { connectToDatabase } from "./services/database.service";
 import { usersRouter } from "./routes/users.router";
 import { authRouter } from "./routes/auth.router";
-require("../passport-config")(passport);
+require("../passport-config");
 
 // Global Config
 const app: Application = express();

@@ -3,6 +3,7 @@ import express, { Request, Response } from "express";
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const crypto = require("crypto");
+const passport = require("passport");
 
 import { collections } from "../services/database.service";
 import User from "../models/user";
@@ -70,7 +71,12 @@ authRouter.post("/login", async (req, res) => {
     });
 
     const refreshToken = crypto.randomBytes(64).toString("hex");
-    user.refreshToken = refreshToken;
+    const hashedRefreshToken = await bcrypt.hash(refreshToken, 10);
+
+    await collections.users.updateOne(
+      { email: user.email },
+      { $set: { refreshToken: hashedRefreshToken } }
+    );
 
     res.json({ message: "Logged in successfully", token, refreshToken });
   } catch (error) {
@@ -84,21 +90,42 @@ authRouter.post("/login", async (req, res) => {
 });
 
 // REFRESH TOKEN
-authRouter.post("/token", async (req, res) => {
-  if (!collections.users) {
-    res.status(500).send("Users collection not initialized");
-    return;
+authRouter.post(
+  "/token",
+  passport.authenticate("jwt", { session: false }),
+  async (req, res) => {
+    const user = req.user;
+
+    const { refreshToken } = req.body;
+
+    const incomingHashedToken = await bcrypt.hash(refreshToken, 10);
+
+    const isMatch = await bcrypt.compare(
+      incomingHashedToken,
+      user.refreshToken
+    );
+
+    if (!isMatch) {
+      return res.status(403).json({ message: "Invalid refresh token" });
+    }
+
+    const newToken = jwt.sign({ email: user.email }, process.env.JWT_SECRET, {
+      expiresIn: "1h",
+    });
+
+    const newRefreshToken = crypto.randomBytes(64).toString("hex");
+    const hashedNewRefreshToken = await bcrypt.hash(newRefreshToken, 10);
+
+    if (!collections.users) {
+      res.status(500).send("Users collection not initialized");
+      return;
+    }
+
+    await collections.users.updateOne(
+      { email: user.email },
+      { $set: { refreshToken: hashedNewRefreshToken } }
+    );
+
+    res.json({ message: "New access token generated", token: newToken });
   }
-
-  const { refreshToken } = req.body;
-
-  const user = await collections.users.findOne({ refreshToken: refreshToken });
-  if (!user) {
-    return res.status(403).json({ message: "Invalid refresh token" });
-  }
-
-  const newToken = jwt.sign({ email: user.email }, process.env.JWT_SECRET, {
-    expiresIn: "1h",
-  });
-  res.json({ message: "New access token generated", token: newToken });
-});
+);
