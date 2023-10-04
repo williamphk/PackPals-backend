@@ -7,6 +7,7 @@ export default class User {
     public email: string,
     public hashed_password: string,
     public created_date: Date,
+    public refreshToken?: string,
     public id?: ObjectId
   ) {}
 }
