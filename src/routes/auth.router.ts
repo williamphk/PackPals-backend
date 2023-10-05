@@ -129,3 +129,26 @@ authRouter.post(
     res.json({ message: "New access token generated", token: newToken });
   }
 );
+
+authRouter.post(
+  "/logout",
+  passport.authenticate("jwt", { session: false }),
+  async (req, res) => {
+    const user = req.user;
+
+    const { refreshToken } = req.body;
+
+    const incomingHashedToken = await bcrypt.hash(refreshToken, 10);
+
+    const isMatch = await bcrypt.compare(
+      incomingHashedToken,
+      user.refreshToken
+    );
+    if (!isMatch) {
+      return res.status(403).json({ message: "Invalid refresh token" });
+    }
+
+    user.refreshToken = null;
+    res.json({ message: "User logged out successfully" });
+  }
+);

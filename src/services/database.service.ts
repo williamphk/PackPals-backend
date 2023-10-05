@@ -51,6 +51,10 @@ export async function connectToDatabase() {
             bsonType: "string",
             description: "'password' is required and is a string",
           },
+          refreshToken: {
+            bsonType: "string",
+            description: "'refreshToken' is a string",
+          },
           created_date: {
             bsonType: "date",
             description: "'created_date' is required and is a date",

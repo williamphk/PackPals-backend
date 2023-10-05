@@ -31,36 +31,6 @@ usersRouter.get("/", async (_req: Request, res: Response) => {
   }
 });
 
-// PUT
-usersRouter.put("/:id", async (req: Request, res: Response) => {
-  const id = req?.params?.id;
-
-  try {
-    if (!collections.users) {
-      res.status(500).send("Users collection not initialized");
-      return;
-    }
-
-    const updatedUser: User = req.body as User;
-    const query = { _id: new ObjectId(id) };
-
-    const result = await collections.users.updateOne(query, {
-      $set: updatedUser,
-    });
-
-    result
-      ? res.status(200).send(`Successfully updated user with id ${id}`)
-      : res.status(304).send(`User with id: ${id} not updated`);
-  } catch (error) {
-    if (error instanceof Error) {
-      console.error(error);
-      res.status(500).send(error.message);
-    } else {
-      res.status(500).send("An unexpected error occurred");
-    }
-  }
-});
-
 // DELETE
 usersRouter.delete("/:id", async (req: Request, res: Response) => {
   const id = req?.params?.id;
