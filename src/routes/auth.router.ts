@@ -73,6 +73,8 @@ authRouter.post("/login", async (req, res) => {
     const refreshToken = crypto.randomBytes(64).toString("hex");
     const hashedRefreshToken = await bcrypt.hash(refreshToken, 10);
 
+    console.log(hashedRefreshToken);
+
     await collections.users.updateOne(
       { email: user.email },
       { $set: { refreshToken: hashedRefreshToken } }
@@ -98,12 +100,7 @@ authRouter.post(
 
     const { refreshToken } = req.body;
 
-    const incomingHashedToken = await bcrypt.hash(refreshToken, 10);
-
-    const isMatch = await bcrypt.compare(
-      incomingHashedToken,
-      user.refreshToken
-    );
+    const isMatch = await bcrypt.compare(refreshToken, user.refreshToken);
 
     if (!isMatch) {
       return res.status(403).json({ message: "Invalid refresh token" });
@@ -130,7 +127,8 @@ authRouter.post(
   }
 );
 
-authRouter.post(
+// LOGOUT
+authRouter.get(
   "/logout",
   passport.authenticate("jwt", { session: false }),
   async (req, res) => {
@@ -138,12 +136,7 @@ authRouter.post(
 
     const { refreshToken } = req.body;
 
-    const incomingHashedToken = await bcrypt.hash(refreshToken, 10);
-
-    const isMatch = await bcrypt.compare(
-      incomingHashedToken,
-      user.refreshToken
-    );
+    const isMatch = await bcrypt.compare(refreshToken, user.refreshToken);
     if (!isMatch) {
       return res.status(403).json({ message: "Invalid refresh token" });
     }

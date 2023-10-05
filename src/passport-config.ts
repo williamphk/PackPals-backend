@@ -1,6 +1,6 @@
 const JwtStrategy = require("passport-jwt").Strategy;
 const ExtractJwt = require("passport-jwt").ExtractJwt;
-import { collections } from "./src/services/database.service";
+import { collections } from "./services/database.service";
 
 interface JwtPayload {
   email: string;

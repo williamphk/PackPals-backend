@@ -2,11 +2,11 @@
 import express, { Application } from "express";
 const passport = require("passport");
 require("dotenv").config();
-
 import { connectToDatabase } from "./services/database.service";
+import configurePassport from "./passport-config";
+configurePassport(passport);
 import { usersRouter } from "./routes/users.router";
 import { authRouter } from "./routes/auth.router";
-require("../passport-config");
 
 // Global Config
 const app: Application = express();
@@ -19,6 +19,7 @@ connectToDatabase()
 
     app.use("/users", usersRouter);
     app.use("/auth", authRouter);
+
     app.get(
       "/protected",
       passport.authenticate("jwt", { session: false }),
