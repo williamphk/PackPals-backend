@@ -129,23 +129,6 @@ authRouter.get(
   }
 );
 
-// GET Profile
-authRouter.get(
-  "/profile/:userId",
-  passport.authenticate("jwt", { session: false }),
-  async (req: Request, res: Response) => {
-    try {
-      const { userId } = req.params;
-      const query = { _id: new ObjectId(userId) };
-      const result = await collections.users?.findOne(query);
-
-      res.status(200).send(result);
-    } catch (error) {
-      res.status(500).send("An unexpected error occurred");
-    }
-  }
-);
-
 // DELETE Profile
 authRouter.delete(
   "/profile/:userId",
