@@ -6,17 +6,23 @@ This is a RESTful API for a grocery matching application built with TypeScript, 
 
 The API consists of the following endpoints:
 
-### Users
+### Auth
 - Register: `/auth/register` (POST)
 - Login with JWT: `/auth/login` (POST)
 - Get refresh token: `/auth/token` (POST)
-- logout: `/auth/logout` (GET)
-- Get profile: `/auth/profile/:userId` (GET)
+- Logout: `/auth/logout` (GET)
+- Remove profile: `/auth/profile/:userId` (DELETE)
 
 ### Matches
 - Search for matches: `/matches/:keyword` (GET)
+- GET user profile and the matched product: `/matches/:matchId/users/:userId` (GET)
+- Accept match `/matches/:matchId/accept` (POST)
 - Create a match: `/matches` (POST)
-- Retrieve newly matched products: `/matches/new` (GET)
-- Retrieve ongoing matches: `/matches/ongoing` (GET)
-- Retrieve recently matched products: `/matches/recent` (GET)
-- Remove a specific match: `/matches/:id` (DELETE)
+- Remove a specific match: `/matches/:matchId` (DELETE)
+
+## Users
+- Retrieve newly matched products: `/users/new` (GET)
+- Retrieve ongoing matches: `/users/ongoing` (GET)
+- Retrieve recently matched products: `/users/recent` (GET)
+- Retrieve you might like: `/users/like` (GET)
+
