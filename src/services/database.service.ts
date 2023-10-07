@@ -86,11 +86,15 @@ export async function connectToDatabase() {
           },
           created_date: {
             bsonType: "date",
-            description: "'last_name' is required and is a date",
+            description: "'created_date' is required and is a date",
           },
-          requester: {
+          requesterId: {
             bsonType: "objectId",
-            description: "'requester' is required and is a ObjectId",
+            description: "'requester' is required and is a objectId",
+          },
+          requesteeId: {
+            bsonType: "objectId",
+            description: "'requesteeId' is required and is a objectId",
           },
           status: {
             bsonType: "string",

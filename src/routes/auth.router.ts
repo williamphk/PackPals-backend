@@ -80,7 +80,9 @@ authRouter.post("/login", async (req, res) => {
       { $set: { refreshToken: hashedRefreshToken } }
     );
 
-    res.json({ message: "Logged in successfully", token, refreshToken });
+    res
+      .status(201)
+      .json({ message: "Logged in successfully", token, refreshToken });
   } catch (error) {
     if (error instanceof Error) {
       console.error(error);
@@ -123,7 +125,9 @@ authRouter.post(
       { $set: { refreshToken: hashedNewRefreshToken } }
     );
 
-    res.json({ message: "New access token generated", token: newToken });
+    res
+      .status(201)
+      .json({ message: "New access token generated", token: newToken });
   }
 );
 
@@ -142,6 +146,6 @@ authRouter.get(
     }
 
     user.refreshToken = null;
-    res.json({ message: "User logged out successfully" });
+    res.status(201).json({ message: "User logged out successfully" });
   }
 );

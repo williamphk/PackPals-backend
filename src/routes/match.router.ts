@@ -10,6 +10,55 @@ export const matchRouter = express.Router();
 
 matchRouter.use(express.json());
 
+// GET matches with keyword
+matchRouter.get(
+  "/matches/:keyword",
+  passport.authenticate("jwt", { session: false }),
+  async (req: Request, res: Response) => {
+    try {
+      const keyword = req.params.keyword;
+
+      if (!collections.matches) {
+        res.status(500).send("Matches collection not initialized");
+        return;
+      }
+
+      // Aggregation pipeline to find matches and then populate with requester's name
+      const pipeline = [
+        {
+          $match: { productName: { $regex: keyword, $options: "i" } },
+        },
+        {
+          $lookup: {
+            from: "users",
+            localField: "requesterId",
+            foreignField: "_id",
+            as: "requesterInfo",
+          },
+        },
+        {
+          $addFields: {
+            requesterName: { $arrayElemAt: ["$requesterInfo.name", 0] },
+          },
+        },
+        {
+          $project: { requesterInfo: 0 },
+        },
+      ];
+
+      const matches = await collections.matches.aggregate(pipeline).toArray();
+
+      res.status(201).send(matches);
+    } catch (error) {
+      if (error instanceof Error) {
+        res.status(500).send(error.message);
+      } else {
+        res.status(500).send("An unexpected error occurred");
+      }
+    }
+  }
+);
+
 // POST matches
 matchRouter.post(
   "/matches",

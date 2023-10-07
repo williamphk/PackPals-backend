@@ -4,9 +4,9 @@ export default class Match {
   constructor(
     public product_name: string,
     public created_date: Date,
-    public requester: ObjectId,
+    public requesterId: ObjectId,
     public status: string,
-    public requestee?: ObjectId,
+    public requesteeId?: ObjectId,
     public id?: ObjectId
   ) {}
 }
