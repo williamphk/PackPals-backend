@@ -17,7 +17,7 @@ userRouter.get(
     try {
       const { userId } = req.params;
 
-      // Aggregation pipeline to find recent matches and then populate with requester's name
+      // Aggregation pipeline to find recent matches and then populate with requestee's name
       const pipeline = [
         {
           $match: {
@@ -28,7 +28,7 @@ userRouter.get(
         {
           $lookup: {
             from: "users",
-            localField: "requesterId",
+            localField: "requesteeId",
             foreignField: "_id",
             as: "userDetails",
           },
@@ -72,40 +72,12 @@ userRouter.get(
     try {
       const { userId } = req.params;
 
-      // Aggregation pipeline to find ongoing matches and then populate with requester's name
-      const pipeline = [
-        {
-          $match: {
-            requesterId: new ObjectId(userId),
-            status: "pending",
-          },
-        },
-        {
-          $lookup: {
-            from: "users",
-            localField: "requesterId",
-            foreignField: "_id",
-            as: "userDetails",
-          },
-        },
-        {
-          $project: {
-            product_name: 1,
-            "userDetails.first_name": 1,
-            "userDetails.last_name": 1,
-          },
-        },
-        {
-          $sort: { created_date: -1 },
-        },
-        {
-          $limit: 10,
-        },
-      ];
-
-      // Retrieve recent matches for the user
+      // Retrieve ongoing matches for the user
       const onGoingMatches = await collections.matches
-        ?.aggregate(pipeline)
+        ?.find({
+          requesterId: new ObjectId(userId),
+          status: "pending",
+        })
         .toArray();
 
       !onGoingMatches?.length
