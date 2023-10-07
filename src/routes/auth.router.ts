@@ -28,7 +28,6 @@ authRouter.post("/register", async (req: Request, res: Response) => {
       : res.status(500).send("Failed to create a new user.");
   } catch (error) {
     if (error instanceof Error) {
-      console.error(error);
       res.status(500).send(error.message);
     } else {
       res.status(500).send("An unexpected error occurred");
@@ -41,9 +40,8 @@ authRouter.post("/login", async (req, res) => {
   try {
     const { email, password } = req.body;
 
-    const user = (await collections.users?.findOne({
-      email: email,
-    })) as User | null;
+    const query = { email: email };
+    const user = await collections.users?.findOne(query);
 
     if (!user) {
       return res.status(401).json({ message: "Invalid email or password" });
@@ -62,8 +60,6 @@ authRouter.post("/login", async (req, res) => {
     const refreshToken = crypto.randomBytes(64).toString("hex");
     const hashedRefreshToken = await bcrypt.hash(refreshToken, 10);
 
-    console.log(hashedRefreshToken);
-
     await collections.users?.updateOne(
       { email: user.email },
       { $set: { refreshToken: hashedRefreshToken } }
@@ -74,7 +70,6 @@ authRouter.post("/login", async (req, res) => {
       .json({ message: "Logged in successfully", token, refreshToken });
   } catch (error) {
     if (error instanceof Error) {
-      console.error(error);
       res.status(500).send(error.message);
     } else {
       res.status(500).send("An unexpected error occurred");
@@ -134,7 +129,7 @@ authRouter.get(
   }
 );
 
-// GET
+// GET Profile
 authRouter.get(
   "/profile/:userId",
   passport.authenticate("jwt", { session: false }),
@@ -155,7 +150,7 @@ authRouter.get(
   }
 );
 
-// DELETE
+// DELETE Profile
 authRouter.delete(
   "/profile/:userId",
   passport.authenticate("jwt", { session: false }),
@@ -174,7 +169,6 @@ authRouter.delete(
       }
     } catch (error) {
       if (error instanceof Error) {
-        console.error(error);
         res.status(500).send(error.message);
       } else {
         res.status(500).send("An unexpected error occurred");

@@ -1,6 +1,7 @@
 // External Dependencies
 import express, { Request, Response } from "express";
 const passport = require("passport");
+import { ObjectId } from "mongodb";
 
 import { collections } from "../services/database.service";
 import Match from "../models/match";
@@ -15,11 +16,6 @@ matchRouter.get(
   async (req: Request, res: Response) => {
     try {
       const keyword = req.params.keyword;
-
-      if (!collections.matches) {
-        res.status(500).send("Matches collection not initialized");
-        return;
-      }
 
       // Aggregation pipeline to find matches and then populate with requester's name
       const pipeline = [
@@ -44,7 +40,7 @@ matchRouter.get(
         },
       ];
 
-      const matches = await collections.matches.aggregate(pipeline).toArray();
+      const matches = await collections.matches?.aggregate(pipeline).toArray();
 
       res.status(201).send(matches);
     } catch (error) {
@@ -53,6 +49,46 @@ matchRouter.get(
       } else {
         res.status(500).send("An unexpected error occurred");
       }
+    }
+  }
+);
+
+// POST accept match
+matchRouter.post(
+  "/matches/:matchId/accept",
+  passport.authenticate("jwt", { session: false }),
+  async (req: Request, res: Response) => {
+    try {
+      const matchId = req.params.matchId;
+
+      // Check if the match accepted
+      const match = await collections.matches?.findOne({
+        _id: new ObjectId(matchId),
+      });
+
+      if (!match) {
+        return res.status(404).json({ message: "Match not found" });
+      }
+
+      if (match.status === "accepted") {
+        return res.status(400).json({ message: "Match already accepted" });
+      }
+
+      // Update the match status to accepted
+      const result: any = await collections.matches?.updateOne(
+        { _id: new ObjectId(matchId) },
+        { $set: [{ status: "accepted" }, { requesteeId: req.user._id }] }
+      );
+
+      if (result.modifiedCount === 0) {
+        throw new Error("Failed to accept match request.");
+      }
+
+      res.status(201).json({
+        message: "Match request accepted successfully",
+      });
+    } catch (error) {
+      res.status(500).send("An unexpected error occurred");
     }
   }
 );
@@ -74,13 +110,8 @@ matchRouter.post(
       // Create a new match object
       const newMatch = new Match(productName, new Date(), requester, "pending");
 
-      if (!collections.matches) {
-        res.status(500).send("Matches collection not initialized");
-        return;
-      }
-
       // Store the match request in the database
-      const result: any = await collections.matches.insertOne(newMatch);
+      const result: any = await collections.matches?.insertOne(newMatch);
 
       if (result.insertedCount === 0) {
         throw new Error("Failed to create match request.");
@@ -91,7 +122,6 @@ matchRouter.post(
         matchId: result.insertedId,
       });
     } catch (error) {
-      console.error("Error creating match request:", error);
       res.status(500).send("An unexpected error occurred");
     }
   }
