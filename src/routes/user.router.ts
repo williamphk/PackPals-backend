@@ -4,7 +4,6 @@ const passport = require("passport");
 import { ObjectId } from "mongodb";
 
 import { collections } from "../services/database.service";
-import User from "../models/user";
 
 // Global Config
 export const userRouter = express.Router();

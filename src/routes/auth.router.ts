@@ -5,6 +5,7 @@ const jwt = require("jsonwebtoken");
 const crypto = require("crypto");
 const passport = require("passport");
 import { ObjectId } from "mongodb";
+import { body } from "express-validator";
 
 import { collections } from "../services/database.service";
 import User from "../models/user";
@@ -13,61 +14,88 @@ import User from "../models/user";
 export const authRouter = express.Router();
 
 // POST Register
-authRouter.post("/register", async (req: Request, res: Response) => {
-  try {
-    const newUser = req.body as User;
-    const hashedPassword = await bcrypt.hash(req.body.hashed_password, 10);
-    newUser.hashed_password = hashedPassword;
-    newUser.created_date = new Date(newUser.created_date);
-    const result = await collections.users?.insertOne(newUser);
+const registerValidation = [
+  body("first_name").notEmpty().withMessage("First name is required."),
+  body("last_name").notEmpty().withMessage("Last name is required."),
+  body("email").isEmail().withMessage("Enter a valid email address."),
+  body("password")
+    .isLength({ min: 8 })
+    .withMessage("Password must be at least 8 characters long."),
+];
 
-    result
-      ? res
-          .status(201)
-          .send(`User registered successfully with id ${result.insertedId}`)
-      : res.status(500).send("Failed to create a new user.");
-  } catch (error) {
-    res.status(500).send("An unexpected error occurred");
+authRouter.post(
+  "/register",
+  registerValidation,
+  async (req: Request, res: Response) => {
+    try {
+      const newUser = req.body as User;
+      const hashedPassword = await bcrypt.hash(req.body.hashed_password, 10);
+      newUser.hashed_password = hashedPassword;
+      newUser.created_date = new Date(newUser.created_date);
+      const result = await collections.users?.insertOne(newUser);
+
+      result
+        ? res
+            .status(201)
+            .send(`User registered successfully with id ${result.insertedId}`)
+        : res.status(500).send("Failed to create a new user.");
+    } catch (error) {
+      res.status(500).send("An unexpected error occurred");
+    }
   }
-});
+);
 
 // POST Login
-authRouter.post("/login", async (req, res) => {
-  try {
-    const { email, password } = req.body;
+const loginValidation = [
+  body("email").isEmail().withMessage("Enter a valid email address."),
+  body("password")
+    .isLength({ min: 8 })
+    .withMessage("Password must be at least 8 characters long."),
+];
 
-    const query = { email: email };
-    const user = await collections.users?.findOne(query);
+authRouter.post(
+  "/login",
+  loginValidation,
+  async (req: Request, res: Response) => {
+    try {
+      const { email, password } = req.body;
 
-    if (!user) {
-      return res.status(401).json({ message: "Invalid email or password" });
+      const query = { email: email };
+      const user = await collections.users?.findOne(query);
+
+      if (!user) {
+        return res.status(401).json({ message: "Invalid email or password" });
+      }
+
+      const passwordMatch = await bcrypt.compare(
+        password,
+        user.hashed_password
+      );
+
+      if (!passwordMatch) {
+        return res.status(401).json({ message: "Invalid email or password" });
+      }
+
+      const token = jwt.sign({ email: user.email }, process.env.JWT_SECRET, {
+        expiresIn: "1h",
+      });
+
+      const refreshToken = crypto.randomBytes(64).toString("hex");
+      const hashedRefreshToken = await bcrypt.hash(refreshToken, 10);
+
+      await collections.users?.updateOne(
+        { email: user.email },
+        { $set: { refreshToken: hashedRefreshToken } }
+      );
+
+      res
+        .status(201)
+        .json({ message: "Logged in successfully", token, refreshToken });
+    } catch (error) {
+      res.status(500).send("An unexpected error occurred");
     }
-
-    const passwordMatch = await bcrypt.compare(password, user.hashed_password);
-
-    if (!passwordMatch) {
-      return res.status(401).json({ message: "Invalid email or password" });
-    }
-
-    const token = jwt.sign({ email: user.email }, process.env.JWT_SECRET, {
-      expiresIn: "1h",
-    });
-
-    const refreshToken = crypto.randomBytes(64).toString("hex");
-    const hashedRefreshToken = await bcrypt.hash(refreshToken, 10);
-
-    await collections.users?.updateOne(
-      { email: user.email },
-      { $set: { refreshToken: hashedRefreshToken } }
-    );
-
-    res
-      .status(201)
-      .json({ message: "Logged in successfully", token, refreshToken });
-  } catch (error) {
-    res.status(500).send("An unexpected error occurred");
   }
-});
+);
 
 // POST Token
 authRouter.post(

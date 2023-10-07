@@ -2,6 +2,7 @@
 import express, { Request, Response } from "express";
 const passport = require("passport");
 import { ObjectId } from "mongodb";
+import { body } from "express-validator";
 
 import { collections } from "../services/database.service";
 import Match from "../models/match";
@@ -134,18 +135,23 @@ matchRouter.post(
 );
 
 // POST matches
+const matchValidation = [
+  body("productName")
+    .not()
+    .isEmpty()
+    .withMessage("Product name is required")
+    .trim()
+    .escape(),
+];
+
 matchRouter.post(
   "/matches",
   passport.authenticate("jwt", { session: false }),
+  matchValidation,
   async (req: Request, res: Response) => {
     try {
-      const { productName, requester } = req.body;
-
-      if (!productName || !requester) {
-        return res
-          .status(500)
-          .json({ message: "Product name and Requester are required." });
-      }
+      const { productName } = req.body;
+      const requester = req.user._id;
 
       // Create a new match object
       const newMatch = new Match(productName, new Date(), requester, "pending");
