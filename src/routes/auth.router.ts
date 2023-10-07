@@ -4,6 +4,7 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const crypto = require("crypto");
 const passport = require("passport");
+import { ObjectId } from "mongodb";
 
 import { collections } from "../services/database.service";
 import User from "../models/user";
@@ -11,21 +12,14 @@ import User from "../models/user";
 // Global Config
 export const authRouter = express.Router();
 
-authRouter.use(express.json());
-
 // POST Register
 authRouter.post("/register", async (req: Request, res: Response) => {
   try {
-    if (!collections.users) {
-      res.status(500).send("Users collection not initialized");
-      return;
-    }
-
     const newUser = req.body as User;
     const hashedPassword = await bcrypt.hash(req.body.hashed_password, 10);
     newUser.hashed_password = hashedPassword;
     newUser.created_date = new Date(newUser.created_date);
-    const result = await collections.users.insertOne(newUser);
+    const result = await collections.users?.insertOne(newUser);
 
     result
       ? res
@@ -47,12 +41,7 @@ authRouter.post("/login", async (req, res) => {
   try {
     const { email, password } = req.body;
 
-    if (!collections.users) {
-      res.status(500).send("Users collection not initialized");
-      return;
-    }
-
-    const user = (await collections.users.findOne({
+    const user = (await collections.users?.findOne({
       email: email,
     })) as User | null;
 
@@ -75,7 +64,7 @@ authRouter.post("/login", async (req, res) => {
 
     console.log(hashedRefreshToken);
 
-    await collections.users.updateOne(
+    await collections.users?.updateOne(
       { email: user.email },
       { $set: { refreshToken: hashedRefreshToken } }
     );
@@ -115,12 +104,7 @@ authRouter.post(
     const newRefreshToken = crypto.randomBytes(64).toString("hex");
     const hashedNewRefreshToken = await bcrypt.hash(newRefreshToken, 10);
 
-    if (!collections.users) {
-      res.status(500).send("Users collection not initialized");
-      return;
-    }
-
-    await collections.users.updateOne(
+    await collections.users?.updateOne(
       { email: user.email },
       { $set: { refreshToken: hashedNewRefreshToken } }
     );
@@ -147,5 +131,54 @@ authRouter.get(
 
     user.refreshToken = null;
     res.status(201).json({ message: "User logged out successfully" });
+  }
+);
+
+// GET
+authRouter.get(
+  "/profile/:userId",
+  passport.authenticate("jwt", { session: false }),
+  async (req: Request, res: Response) => {
+    try {
+      const id = req.params?.userId;
+      const query = { _id: new ObjectId(id) };
+      const result = await collections.users?.findOne(query);
+
+      res.status(200).send(result);
+    } catch (error) {
+      if (error instanceof Error) {
+        res.status(500).send(error.message);
+      } else {
+        res.status(500).send("An unexpected error occurred");
+      }
+    }
+  }
+);
+
+// DELETE
+authRouter.delete(
+  "/profile/:userId",
+  passport.authenticate("jwt", { session: false }),
+  async (req: Request, res: Response) => {
+    try {
+      const id = req.params?.userId;
+      const query = { _id: new ObjectId(id) };
+      const result = await collections.users?.deleteOne(query);
+
+      if (result && result.deletedCount) {
+        res.status(202).send(`Successfully removed user with id ${id}`);
+      } else if (!result) {
+        res.status(400).send(`Failed to remove user with id ${id}`);
+      } else if (!result.deletedCount) {
+        res.status(404).send(`User with id ${id} does not exist`);
+      }
+    } catch (error) {
+      if (error instanceof Error) {
+        console.error(error);
+        res.status(500).send(error.message);
+      } else {
+        res.status(500).send("An unexpected error occurred");
+      }
+    }
   }
 );

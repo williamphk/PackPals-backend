@@ -5,7 +5,6 @@ require("dotenv").config();
 import { connectToDatabase } from "./services/database.service";
 import configurePassport from "./passport-config";
 configurePassport(passport);
-import { usersRouter } from "./routes/users.router";
 import { authRouter } from "./routes/auth.router";
 
 // Global Config
@@ -16,8 +15,8 @@ const PORT: number = 3001;
 connectToDatabase()
   .then(() => {
     app.use(passport.initialize());
+    app.use(express.json());
 
-    app.use("/users", usersRouter);
     app.use("/auth", authRouter);
 
     app.get(

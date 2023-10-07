@@ -8,8 +8,6 @@ import Match from "../models/match";
 // Global Config
 export const matchRouter = express.Router();
 
-matchRouter.use(express.json());
-
 // GET matches with keyword
 matchRouter.get(
   "/matches/:keyword",
