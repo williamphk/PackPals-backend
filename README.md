@@ -15,13 +15,13 @@ The API consists of the following endpoints:
 
 ### Matches
 - Search for matches: `/matches/:keyword` (GET)
-- Retrieve user profile and the matched product: `/matches/:matchId/users/:userId` (GET)
-- Accept match `/matches/:matchId/accept` (POST)
+- Retrieve specific match: `/matches/:matchId` (GET)
 - Create a match: `/matches` (POST)
+- Accept match `/matches/:matchId/accept` (POST)
 - Remove a specific match: `/matches/:matchId` (DELETE)
 
-## Users
-- Retrieve recently matched products: `/users/recent` (GET)
-- Retrieve ongoing matches: `/users/ongoing` (GET)
-- Retrieve you might like matches: `/users/like` (GET)
+### Users
+- Retrieve recently matched products: `/users/:userId/recent` (GET)
+- Retrieve ongoing matches: `/users/:userId/ongoing` (GET)
+- Retrieve you might like matches: `/users/:userId/like` (GET)
 
