@@ -21,8 +21,7 @@ The API consists of the following endpoints:
 - Remove a specific match: `/matches/:matchId` (DELETE)
 
 ## Users
-- Retrieve newly matched products: `/users/new` (GET)
-- Retrieve ongoing matches: `/users/ongoing` (GET)
 - Retrieve recently matched products: `/users/recent` (GET)
-- Retrieve you might like: `/users/like` (GET)
+- Retrieve ongoing matches: `/users/ongoing` (GET)
+- Retrieve you might like matches: `/users/like` (GET)
 
