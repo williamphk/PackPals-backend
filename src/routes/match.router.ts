@@ -109,11 +109,19 @@ matchRouter.post(
   async (req: Request, res: Response) => {
     try {
       const { matchId } = req.params;
+      const requester = req.user._id;
       const query = { _id: new ObjectId(matchId) };
 
-      // Check if the match accepted
       const match = await collections.matches?.findOne(query);
 
+      // Check if the match is created by the user
+      if (match?.requesterId.equals(requester)) {
+        return res
+          .status(400)
+          .json({ message: "You cannot accept your own match request" });
+      }
+
+      // Check if the match accepted
       if (match?.status === "accepted") {
         return res.status(400).json({ message: "Match already accepted" });
       }
