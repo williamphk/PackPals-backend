@@ -101,6 +101,7 @@ userRouter.get(
         {
           $match: {
             status: "pending",
+            requesterId: { $ne: req.user._id },
           },
         },
         {
