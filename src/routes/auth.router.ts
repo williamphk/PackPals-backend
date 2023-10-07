@@ -13,7 +13,7 @@ export const authRouter = express.Router();
 
 authRouter.use(express.json());
 
-// REGISTER
+// POST Register
 authRouter.post("/register", async (req: Request, res: Response) => {
   try {
     if (!collections.users) {
@@ -42,7 +42,7 @@ authRouter.post("/register", async (req: Request, res: Response) => {
   }
 });
 
-// LOGIN
+// POST Login
 authRouter.post("/login", async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -91,7 +91,7 @@ authRouter.post("/login", async (req, res) => {
   }
 });
 
-// REFRESH TOKEN
+// POST Token
 authRouter.post(
   "/token",
   passport.authenticate("jwt", { session: false }),
@@ -127,7 +127,7 @@ authRouter.post(
   }
 );
 
-// LOGOUT
+// GET Logout
 authRouter.get(
   "/logout",
   passport.authenticate("jwt", { session: false }),
