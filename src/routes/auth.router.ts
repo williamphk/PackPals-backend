@@ -88,9 +88,11 @@ authRouter.post(
         { $set: { refreshToken: hashedRefreshToken } }
       );
 
-      res
-        .status(201)
-        .json({ message: "Logged in successfully", token, refreshToken });
+      res.status(201).json({
+        message: "Logged in successfully",
+        token: token,
+        refreshToken: refreshToken,
+      });
     } catch (error) {
       res.status(500).send("An unexpected error occurred");
     }
@@ -125,9 +127,11 @@ authRouter.post(
         { $set: { refreshToken: hashedNewRefreshToken } }
       );
 
-      res
-        .status(201)
-        .json({ message: "New access token generated", token: newToken });
+      res.status(201).json({
+        message: "New access token generated",
+        token: newToken,
+        refreshToken: newRefreshToken,
+      });
     } catch (error) {
       res.status(500).send("An unexpected error occurred");
     }

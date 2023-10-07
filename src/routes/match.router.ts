@@ -78,17 +78,17 @@ matchRouter.get(
             from: "users",
             localField: "requesterId",
             foreignField: "_id",
-            as: "userDetails",
+            as: "requesterDetails",
           },
         },
         {
-          $unwind: "$userDetails",
+          $unwind: "$requesterDetails",
         },
         {
           $project: {
             productName: 1,
-            "userDetails.first_name": 1,
-            "userDetails.last_name": 1,
+            "requesterDetails.first_name": 1,
+            "requesterDetails.last_name": 1,
           },
         },
       ];

@@ -29,14 +29,14 @@ userRouter.get(
             from: "users",
             localField: "requesteeId",
             foreignField: "_id",
-            as: "userDetails",
+            as: "requesteeDetails",
           },
         },
         {
           $project: {
             product_name: 1,
-            "userDetails.first_name": 1,
-            "userDetails.last_name": 1,
+            "requesteeDetails.first_name": 1,
+            "requesteeDetails.last_name": 1,
           },
         },
         {
@@ -109,14 +109,14 @@ userRouter.get(
             from: "users",
             localField: "requesterId",
             foreignField: "_id",
-            as: "userDetails",
+            as: "requesterDetails",
           },
         },
         {
           $project: {
             product_name: 1,
-            "userDetails.first_name": 1,
-            "userDetails.last_name": 1,
+            "requesterDetails.first_name": 1,
+            "requesterDetails.last_name": 1,
           },
         },
         {
