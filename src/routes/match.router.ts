@@ -60,33 +60,29 @@ matchRouter.post(
   async (req: Request, res: Response) => {
     try {
       const matchId = req.params.matchId;
+      const query = { _id: new ObjectId(matchId) };
 
       // Check if the match accepted
-      const match = await collections.matches?.findOne({
-        _id: new ObjectId(matchId),
-      });
+      const match = await collections.matches?.findOne(query);
 
-      if (!match) {
-        return res.status(404).json({ message: "Match not found" });
-      }
-
-      if (match.status === "accepted") {
+      if (match?.status === "accepted") {
         return res.status(400).json({ message: "Match already accepted" });
       }
 
       // Update the match status to accepted
-      const result: any = await collections.matches?.updateOne(
-        { _id: new ObjectId(matchId) },
-        { $set: [{ status: "accepted" }, { requesteeId: req.user._id }] }
-      );
-
-      if (result.modifiedCount === 0) {
-        throw new Error("Failed to accept match request.");
-      }
-
-      res.status(201).json({
-        message: "Match request accepted successfully",
+      const result = await collections.matches?.updateOne(query, {
+        $set: [{ status: "accepted" }, { requesteeId: req.user._id }],
       });
+
+      if (result && result.modifiedCount) {
+        res.status(201).json({
+          message: "Match request accepted successfully",
+        });
+      } else if (!result) {
+        throw new Error("Failed to accept match request.");
+      } else if (!result.modifiedCount) {
+        throw new Error(`Match with id ${matchId} does not exist`);
+      }
     } catch (error) {
       res.status(500).send("An unexpected error occurred");
     }
@@ -111,16 +107,16 @@ matchRouter.post(
       const newMatch = new Match(productName, new Date(), requester, "pending");
 
       // Store the match request in the database
-      const result: any = await collections.matches?.insertOne(newMatch);
+      const result = await collections.matches?.insertOne(newMatch);
 
-      if (result.insertedCount === 0) {
-        throw new Error("Failed to create match request.");
+      if (result && result.acknowledged) {
+        res.status(201).json({
+          message: "Match request created successfully",
+          matchId: result.insertedId,
+        });
+      } else if (!result || !result.acknowledged) {
+        throw new Error("Failed to create a new match request.");
       }
-
-      res.status(201).json({
-        message: "Match request created successfully",
-        matchId: result.insertedId,
-      });
     } catch (error) {
       res.status(500).send("An unexpected error occurred");
     }

@@ -27,11 +27,7 @@ authRouter.post("/register", async (req: Request, res: Response) => {
           .send(`User registered successfully with id ${result.insertedId}`)
       : res.status(500).send("Failed to create a new user.");
   } catch (error) {
-    if (error instanceof Error) {
-      res.status(500).send(error.message);
-    } else {
-      res.status(500).send("An unexpected error occurred");
-    }
+    res.status(500).send("An unexpected error occurred");
   }
 });
 
@@ -69,11 +65,7 @@ authRouter.post("/login", async (req, res) => {
       .status(201)
       .json({ message: "Logged in successfully", token, refreshToken });
   } catch (error) {
-    if (error instanceof Error) {
-      res.status(500).send(error.message);
-    } else {
-      res.status(500).send("An unexpected error occurred");
-    }
+    res.status(500).send("An unexpected error occurred");
   }
 });
 
@@ -81,32 +73,36 @@ authRouter.post("/login", async (req, res) => {
 authRouter.post(
   "/token",
   passport.authenticate("jwt", { session: false }),
-  async (req, res) => {
-    const user = req.user;
+  async (req: Request, res: Response) => {
+    try {
+      const user = req.user;
 
-    const { refreshToken } = req.body;
+      const { refreshToken } = req.body;
 
-    const isMatch = await bcrypt.compare(refreshToken, user.refreshToken);
+      const isMatch = await bcrypt.compare(refreshToken, user.refreshToken);
 
-    if (!isMatch) {
-      return res.status(403).json({ message: "Invalid refresh token" });
+      if (!isMatch) {
+        return res.status(403).json({ message: "Invalid refresh token" });
+      }
+
+      const newToken = jwt.sign({ email: user.email }, process.env.JWT_SECRET, {
+        expiresIn: "1h",
+      });
+
+      const newRefreshToken = crypto.randomBytes(64).toString("hex");
+      const hashedNewRefreshToken = await bcrypt.hash(newRefreshToken, 10);
+
+      await collections.users?.updateOne(
+        { email: user.email },
+        { $set: { refreshToken: hashedNewRefreshToken } }
+      );
+
+      res
+        .status(201)
+        .json({ message: "New access token generated", token: newToken });
+    } catch (error) {
+      res.status(500).send("An unexpected error occurred");
     }
-
-    const newToken = jwt.sign({ email: user.email }, process.env.JWT_SECRET, {
-      expiresIn: "1h",
-    });
-
-    const newRefreshToken = crypto.randomBytes(64).toString("hex");
-    const hashedNewRefreshToken = await bcrypt.hash(newRefreshToken, 10);
-
-    await collections.users?.updateOne(
-      { email: user.email },
-      { $set: { refreshToken: hashedNewRefreshToken } }
-    );
-
-    res
-      .status(201)
-      .json({ message: "New access token generated", token: newToken });
   }
 );
 
@@ -114,18 +110,22 @@ authRouter.post(
 authRouter.get(
   "/logout",
   passport.authenticate("jwt", { session: false }),
-  async (req, res) => {
-    const user = req.user;
+  async (req: Request, res: Response) => {
+    try {
+      const user = req.user;
 
-    const { refreshToken } = req.body;
+      const { refreshToken } = req.body;
 
-    const isMatch = await bcrypt.compare(refreshToken, user.refreshToken);
-    if (!isMatch) {
-      return res.status(403).json({ message: "Invalid refresh token" });
+      const isMatch = await bcrypt.compare(refreshToken, user.refreshToken);
+      if (!isMatch) {
+        return res.status(403).json({ message: "Invalid refresh token" });
+      }
+
+      user.refreshToken = null;
+      res.status(201).json({ message: "User logged out successfully" });
+    } catch (error) {
+      res.status(500).send("An unexpected error occurred");
     }
-
-    user.refreshToken = null;
-    res.status(201).json({ message: "User logged out successfully" });
   }
 );
 
@@ -141,11 +141,7 @@ authRouter.get(
 
       res.status(200).send(result);
     } catch (error) {
-      if (error instanceof Error) {
-        res.status(500).send(error.message);
-      } else {
-        res.status(500).send("An unexpected error occurred");
-      }
+      res.status(500).send("An unexpected error occurred");
     }
   }
 );
@@ -168,11 +164,7 @@ authRouter.delete(
         res.status(404).send(`User with id ${id} does not exist`);
       }
     } catch (error) {
-      if (error instanceof Error) {
-        res.status(500).send(error.message);
-      } else {
-        res.status(500).send("An unexpected error occurred");
-      }
+      res.status(500).send("An unexpected error occurred");
     }
   }
 );
