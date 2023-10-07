@@ -55,18 +55,17 @@ matchRouter.get(
 
 // GET user profile and the matched products
 matchRouter.get(
-  "/matches/:matchId/users/:requesterId",
+  "/matches/:matchId",
   passport.authenticate("jwt", { session: false }),
   async (req: Request, res: Response) => {
     try {
-      const { matchId, requesterId } = req.params;
+      const { matchId } = req.params;
 
       // Aggregation pipeline to find specific match and then populate with requester's name
       const pipeline = [
         {
           $match: {
             _id: new ObjectId(matchId),
-            requesterId: new ObjectId(requesterId),
           },
         },
         {
