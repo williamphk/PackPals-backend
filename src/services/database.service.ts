@@ -72,7 +72,7 @@ export async function connectToDatabase() {
   });
 
   await db.command({
-    collMod: process.env.USERS_COLLECTION_NAME,
+    collMod: process.env.MATCHES_COLLECTION_NAME,
     validator: {
       $jsonSchema: {
         bsonType: "object",
@@ -117,6 +117,6 @@ export async function connectToDatabase() {
   collections.matches = matchesCollection;
 
   console.log(
-    `Successfully connected to database: ${db.databaseName} and collection: ${usersCollection.collectionName}`
+    `Successfully connected to database: ${db.databaseName} and collection: ${usersCollection.collectionName} ${matchesCollection.collectionName}`
   );
 }

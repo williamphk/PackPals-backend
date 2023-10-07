@@ -28,8 +28,17 @@ authRouter.post(
   registerValidation,
   async (req: Request, res: Response) => {
     try {
-      const newUser = req.body as User;
-      const hashedPassword = await bcrypt.hash(req.body.hashed_password, 10);
+      const { first_name, last_name, email, password, created_date } = req.body;
+
+      const newUser: User = {
+        first_name,
+        last_name,
+        email,
+        hashed_password: password,
+        created_date,
+      };
+
+      const hashedPassword = await bcrypt.hash(req.body.password, 10);
       newUser.hashed_password = hashedPassword;
       newUser.created_date = new Date(newUser.created_date);
       const result = await collections.users?.insertOne(newUser);
@@ -39,7 +48,8 @@ authRouter.post(
             .status(201)
             .send(`User registered successfully with id ${result.insertedId}`)
         : res.status(500).send("Failed to create a new user.");
-    } catch (error) {
+    } catch (error: any) {
+      console.log(error.errInfo.details.schemaRulesNotSatisfied);
       res.status(500).send("An unexpected error occurred");
     }
   }
