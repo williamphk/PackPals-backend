@@ -16,8 +16,8 @@ The API consists of the following endpoints:
 ### Matches
 - Search for matches: `/matches/:keyword` (GET)
 - Retrieve specific match: `/matches/:matchId` (GET)
-- Accept match `/matches/:matchId/accept` (POST)
 - Create a match: `/matches` (POST)
+- Accept match `/matches/:matchId/accept` (POST)
 - Remove a specific match: `/matches/:matchId` (DELETE)
 
 ### Users
