@@ -35,7 +35,7 @@ matchRouter.get(
         },
         {
           $project: {
-            productName: 1,
+            product_name: 1,
             "requesterDetails.first_name": 1,
             "requesterDetails.last_name": 1,
           },
@@ -44,7 +44,9 @@ matchRouter.get(
 
       const matches = await collections.matches?.aggregate(pipeline).toArray();
 
-      res.status(201).send(matches);
+      matches
+        ? res.status(201).send(matches)
+        : res.status(404).send("No matches found");
     } catch (error) {
       res.status(500).send("An unexpected error occurred");
     }
@@ -53,23 +55,24 @@ matchRouter.get(
 
 // GET user profile and the matched products
 matchRouter.get(
-  "/matches/:matchId/users/:userId",
+  "/matches/:matchId/users/:requesterId",
   passport.authenticate("jwt", { session: false }),
   async (req: Request, res: Response) => {
     try {
-      const { matchId, userId } = req.params;
+      const { matchId, requesterId } = req.params;
 
+      // Aggregation pipeline to find specific match and then populate with requester's name
       const pipeline = [
         {
           $match: {
             _id: new ObjectId(matchId),
-            userId: new ObjectId(userId),
+            requesterId: new ObjectId(requesterId),
           },
         },
         {
           $lookup: {
             from: "users",
-            localField: "userId",
+            localField: "requesterId",
             foreignField: "_id",
             as: "userDetails",
           },
@@ -90,11 +93,9 @@ matchRouter.get(
         ?.aggregate(pipeline)
         .next();
 
-      if (!matchWithUserDetails) {
-        return res.status(404).json({ message: "Match not found" });
-      }
-
-      return res.status(200).json(matchWithUserDetails);
+      matchWithUserDetails
+        ? res.status(200).json(matchWithUserDetails)
+        : res.status(404).json({ message: "Match not found" });
     } catch (error) {
       res.status(500).send("An unexpected error occurred");
     }
@@ -122,15 +123,11 @@ matchRouter.post(
         $set: [{ status: "accepted" }, { requesteeId: req.user._id }],
       });
 
-      if (result && result.modifiedCount) {
-        res.status(201).json({
-          message: "Match request accepted successfully",
-        });
-      } else if (!result) {
-        throw new Error("Failed to accept match request.");
-      } else if (!result.modifiedCount) {
-        throw new Error(`Match with id ${matchId} does not exist`);
-      }
+      result?.modifiedCount
+        ? res
+            .status(201)
+            .json({ message: "Match request accepted successfully" })
+        : res.status(500).json({ message: "Failed to accept match request" });
     } catch (error) {
       res.status(500).send("An unexpected error occurred");
     }
@@ -157,14 +154,14 @@ matchRouter.post(
       // Store the match request in the database
       const result = await collections.matches?.insertOne(newMatch);
 
-      if (result && result.acknowledged) {
-        res.status(201).json({
-          message: "Match request created successfully",
-          matchId: result.insertedId,
-        });
-      } else if (!result || !result.acknowledged) {
-        throw new Error("Failed to create a new match request.");
-      }
+      result?.acknowledged
+        ? res.status(201).json({
+            message: "Match request created successfully",
+            matchId: result.insertedId,
+          })
+        : res
+            .status(500)
+            .json({ message: "Failed to create a match request." });
     } catch (error) {
       res.status(500).send("An unexpected error occurred");
     }
