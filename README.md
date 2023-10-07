@@ -20,7 +20,7 @@ The API consists of the following endpoints:
 - Create a match: `/matches` (POST)
 - Remove a specific match: `/matches/:matchId` (DELETE)
 
-## Users
+### Users
 - Retrieve recently matched products: `/users/:userId/recent` (GET)
 - Retrieve ongoing matches: `/users/:userId/ongoing` (GET)
 - Retrieve you might like matches: `/users/:userId/like` (GET)
