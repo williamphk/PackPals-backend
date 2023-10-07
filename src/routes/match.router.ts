@@ -21,7 +21,11 @@ matchRouter.get(
       // Aggregation pipeline to find matches and then populate with requester's name
       const pipeline = [
         {
-          $match: { productName: { $regex: keyword, $options: "i" } },
+          $match: {
+            productName: { $regex: keyword, $options: "i" },
+            requesterId: { $ne: req.user._id },
+            status: "pending",
+          },
         },
         {
           $lookup: {
