@@ -14,6 +14,7 @@ The API consists of the following endpoints:
 - Get profile: `/auth/profile/:userId` (GET)
 
 ### Matches
+- Search for matches: `/matches/:keyword` (GET)
 - Create a match: `/matches` (POST)
 - Retrieve newly matched products: `/matches/new` (GET)
 - Retrieve ongoing matches: `/matches/ongoing` (GET)
