@@ -6,11 +6,14 @@ import { connectToDatabase } from "./services/database.service";
 import configurePassport from "./passport-config";
 configurePassport(passport);
 import { authRouter } from "./routes/auth.router";
+var cors = require("cors");
 
 // Global Config
 const app: Application = express();
 
 const PORT: number = 3001;
+
+app.use(cors());
 
 connectToDatabase()
   .then(() => {
