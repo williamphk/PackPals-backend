@@ -135,8 +135,8 @@ authRouter.get(
   passport.authenticate("jwt", { session: false }),
   async (req: Request, res: Response) => {
     try {
-      const id = req.params?.userId;
-      const query = { _id: new ObjectId(id) };
+      const { userId } = req.params;
+      const query = { _id: new ObjectId(userId) };
       const result = await collections.users?.findOne(query);
 
       res.status(200).send(result);
@@ -152,16 +152,16 @@ authRouter.delete(
   passport.authenticate("jwt", { session: false }),
   async (req: Request, res: Response) => {
     try {
-      const id = req.params?.userId;
-      const query = { _id: new ObjectId(id) };
+      const { userId } = req.params;
+      const query = { _id: new ObjectId(userId) };
       const result = await collections.users?.deleteOne(query);
 
       if (result && result.deletedCount) {
-        res.status(202).send(`Successfully removed user with id ${id}`);
+        res.status(202).send(`Successfully removed user with id ${userId}`);
       } else if (!result) {
-        res.status(400).send(`Failed to remove user with id ${id}`);
+        res.status(400).send(`Failed to remove user with id ${userId}`);
       } else if (!result.deletedCount) {
-        res.status(404).send(`User with id ${id} does not exist`);
+        res.status(404).send(`User with id ${userId} does not exist`);
       }
     } catch (error) {
       res.status(500).send("An unexpected error occurred");

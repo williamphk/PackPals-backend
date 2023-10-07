@@ -9,13 +9,13 @@ import Match from "../models/match";
 // Global Config
 export const matchRouter = express.Router();
 
-// GET matches with keyword
+// GET list of matches with keyword
 matchRouter.get(
   "/matches/:keyword",
   passport.authenticate("jwt", { session: false }),
   async (req: Request, res: Response) => {
     try {
-      const keyword = req.params.keyword;
+      const { keyword } = req.params;
 
       // Aggregation pipeline to find matches and then populate with requester's name
       const pipeline = [
@@ -27,16 +27,18 @@ matchRouter.get(
             from: "users",
             localField: "requesterId",
             foreignField: "_id",
-            as: "requesterInfo",
+            as: "requesterDetails",
           },
         },
         {
-          $addFields: {
-            requesterName: { $arrayElemAt: ["$requesterInfo.name", 0] },
-          },
+          $unwind: "$requesterDetails",
         },
         {
-          $project: { requesterInfo: 0 },
+          $project: {
+            productName: 1,
+            "requesterDetails.first_name": 1,
+            "requesterDetails.last_name": 1,
+          },
         },
       ];
 
@@ -44,11 +46,57 @@ matchRouter.get(
 
       res.status(201).send(matches);
     } catch (error) {
-      if (error instanceof Error) {
-        res.status(500).send(error.message);
-      } else {
-        res.status(500).send("An unexpected error occurred");
+      res.status(500).send("An unexpected error occurred");
+    }
+  }
+);
+
+// GET user profile and the matched products
+matchRouter.get(
+  "/matches/:matchId/users/:userId",
+  passport.authenticate("jwt", { session: false }),
+  async (req: Request, res: Response) => {
+    try {
+      const { matchId, userId } = req.params;
+
+      const pipeline = [
+        {
+          $match: {
+            _id: new ObjectId(matchId),
+            userId: new ObjectId(userId),
+          },
+        },
+        {
+          $lookup: {
+            from: "users",
+            localField: "userId",
+            foreignField: "_id",
+            as: "userDetails",
+          },
+        },
+        {
+          $unwind: "$userDetails",
+        },
+        {
+          $project: {
+            productName: 1,
+            "userDetails.first_name": 1,
+            "userDetails.last_name": 1,
+          },
+        },
+      ];
+
+      const matchWithUserDetails = await collections.matches
+        ?.aggregate(pipeline)
+        .next();
+
+      if (!matchWithUserDetails) {
+        return res.status(404).json({ message: "Match not found" });
       }
+
+      return res.status(200).json(matchWithUserDetails);
+    } catch (error) {
+      res.status(500).send("An unexpected error occurred");
     }
   }
 );
@@ -59,7 +107,7 @@ matchRouter.post(
   passport.authenticate("jwt", { session: false }),
   async (req: Request, res: Response) => {
     try {
-      const matchId = req.params.matchId;
+      const { matchId } = req.params;
       const query = { _id: new ObjectId(matchId) };
 
       // Check if the match accepted
