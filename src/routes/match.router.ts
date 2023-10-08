@@ -12,7 +12,7 @@ export const matchRouter = express.Router();
 
 // GET list of matches with keyword
 matchRouter.get(
-  "/matches/:keyword",
+  "/:keyword",
   passport.authenticate("jwt", { session: false }),
   async (req: Request, res: Response) => {
     try {
@@ -60,7 +60,7 @@ matchRouter.get(
 
 // GET user profile and the matched products
 matchRouter.get(
-  "/matches/:matchId",
+  "/:matchId",
   passport.authenticate("jwt", { session: false }),
   async (req: Request, res: Response) => {
     try {
@@ -108,7 +108,7 @@ matchRouter.get(
 
 // POST accept match
 matchRouter.post(
-  "/matches/:matchId/accept",
+  "/:matchId/accept",
   passport.authenticate("jwt", { session: false }),
   async (req: Request, res: Response) => {
     try {
@@ -157,7 +157,7 @@ const matchValidation = [
 ];
 
 matchRouter.post(
-  "/matches",
+  "/",
   passport.authenticate("jwt", { session: false }),
   matchValidation,
   async (req: Request, res: Response) => {

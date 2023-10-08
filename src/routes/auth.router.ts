@@ -87,7 +87,7 @@ authRouter.post(
       }
 
       const token = jwt.sign({ email: user.email }, process.env.JWT_SECRET, {
-        expiresIn: "1h",
+        expiresIn: "5s",
       });
 
       const refreshToken = crypto.randomBytes(64).toString("hex");

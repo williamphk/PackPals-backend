@@ -2,11 +2,14 @@
 import express, { Application } from "express";
 const passport = require("passport");
 require("dotenv").config();
+var cors = require("cors");
 import { connectToDatabase } from "./services/database.service";
+
 import configurePassport from "./passport-config";
 configurePassport(passport);
+
 import { authRouter } from "./routes/auth.router";
-var cors = require("cors");
+import { matchRouter } from "./routes/match.router";
 
 // Global Config
 const app: Application = express();
@@ -21,6 +24,7 @@ connectToDatabase()
     app.use(express.json());
 
     app.use("/auth", authRouter);
+    app.use("/matches", matchRouter);
 
     app.get(
       "/protected",
