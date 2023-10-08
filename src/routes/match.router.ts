@@ -162,12 +162,17 @@ matchRouter.post(
   matchValidation,
   async (req: Request, res: Response) => {
     try {
-      const { productName } = req.body;
+      const { product_name } = req.body;
       console.log(req.user._id);
       const requester = req.user._id;
 
       // Create a new match object
-      const newMatch = new Match(productName, new Date(), requester, "pending");
+      const newMatch = new Match(
+        product_name,
+        new Date(),
+        requester,
+        "pending"
+      );
 
       console.log(newMatch);
 
