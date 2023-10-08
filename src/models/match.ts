@@ -6,7 +6,6 @@ export default class Match {
     public created_date: Date,
     public requesterId: ObjectId,
     public status: string,
-    public requesteeId?: ObjectId,
-    public id?: ObjectId
+    public requesteeId?: ObjectId
   ) {}
 }

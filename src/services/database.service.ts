@@ -76,7 +76,7 @@ export async function connectToDatabase() {
     validator: {
       $jsonSchema: {
         bsonType: "object",
-        required: ["product_name", "created_date", "requester", "status"],
+        required: ["product_name", "created_date", "requesterId", "status"],
         additionalProperties: false,
         properties: {
           _id: {},
@@ -93,8 +93,8 @@ export async function connectToDatabase() {
             description: "'requester' is required and is a objectId",
           },
           requesteeId: {
-            bsonType: "objectId",
-            description: "'requesteeId' is required and is a objectId",
+            bsonType: ["objectId", "null"],
+            description: "'requesteeId' is null or a objectId",
           },
           status: {
             bsonType: "string",

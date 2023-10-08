@@ -163,10 +163,13 @@ matchRouter.post(
   async (req: Request, res: Response) => {
     try {
       const { productName } = req.body;
+      console.log(req.user._id);
       const requester = req.user._id;
 
       // Create a new match object
       const newMatch = new Match(productName, new Date(), requester, "pending");
+
+      console.log(newMatch);
 
       // Store the match request in the database
       const result = await collections.matches?.insertOne(newMatch);
@@ -179,7 +182,11 @@ matchRouter.post(
         : res
             .status(500)
             .json({ message: "Failed to create a match request." });
-    } catch (error) {
+    } catch (error: any) {
+      console.log(
+        error.errInfo.details.schemaRulesNotSatisfied[0]
+          .propertiesNotSatisfied[0]
+      );
       res.status(500).send("An unexpected error occurred");
     }
   }
