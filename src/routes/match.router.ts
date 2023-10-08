@@ -18,11 +18,13 @@ matchRouter.get(
     try {
       const { keyword } = req.params;
 
+      console.log(keyword);
+
       // Aggregation pipeline to find matches and then populate with requester's name
       const pipeline = [
         {
           $match: {
-            productName: { $regex: keyword, $options: "i" },
+            product_name: { $regex: keyword, $options: "i" },
             requesterId: { $ne: req.user._id },
             status: "pending",
           },
@@ -48,7 +50,7 @@ matchRouter.get(
       ];
 
       const matches = await collections.matches?.aggregate(pipeline).toArray();
-
+      console.log(matches);
       matches
         ? res.status(201).send(matches)
         : res.status(404).send("No matches found");
