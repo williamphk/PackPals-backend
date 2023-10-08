@@ -102,6 +102,10 @@ authRouter.post(
         message: "Logged in successfully",
         token: token,
         refreshToken: refreshToken,
+        id: user._id,
+        first_name: user.first_name,
+        last_name: user.last_name,
+        email: user.email,
       });
     } catch (error) {
       res.status(500).send("An unexpected error occurred");
