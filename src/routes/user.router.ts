@@ -10,7 +10,7 @@ export const userRouter = express.Router();
 
 // GET recent matches for a specific user
 userRouter.get(
-  "/users/:userId/recent",
+  "/:userId/recent",
   passport.authenticate("jwt", { session: false }),
   async (req: Request, res: Response) => {
     try {
@@ -65,7 +65,7 @@ userRouter.get(
 
 // GET ongoing matches for a specific user
 userRouter.get(
-  "/users/:userId/ongoing",
+  "/:userId/ongoing",
   passport.authenticate("jwt", { session: false }),
   async (req: Request, res: Response) => {
     try {
@@ -92,7 +92,7 @@ userRouter.get(
 
 // GET you might also like for a specific user
 userRouter.get(
-  "/users/:userId/like",
+  "/:userId/like",
   passport.authenticate("jwt", { session: false }),
   async (req: Request, res: Response) => {
     try {
