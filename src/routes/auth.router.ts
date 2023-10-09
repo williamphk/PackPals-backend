@@ -114,43 +114,57 @@ authRouter.post(
 );
 
 // POST Token
-authRouter.post(
-  "/token",
-  passport.authenticate("jwt", { session: false }),
-  async (req: Request, res: Response) => {
-    try {
-      const user = req.user;
+authRouter.post("/token", async (req: Request, res: Response) => {
+  try {
+    const { refreshToken } = req.body;
 
-      const { refreshToken } = req.body;
+    const user = await findUserByRefreshToken(refreshToken);
 
-      const isMatch = await bcrypt.compare(refreshToken, user.refreshToken);
+    if (!user) {
+      return res.status(403).json({ message: "Invalid refresh token" });
+    }
 
-      if (!isMatch) {
-        return res.status(403).json({ message: "Invalid refresh token" });
-      }
+    const newToken = jwt.sign({ email: user.email }, process.env.JWT_SECRET, {
+      expiresIn: "24h",
+    });
 
-      const newToken = jwt.sign({ email: user.email }, process.env.JWT_SECRET, {
-        expiresIn: "1h",
-      });
+    const newRefreshToken = crypto.randomBytes(64).toString("hex");
+    const hashedNewRefreshToken = await bcrypt.hash(newRefreshToken, 10);
 
-      const newRefreshToken = crypto.randomBytes(64).toString("hex");
-      const hashedNewRefreshToken = await bcrypt.hash(newRefreshToken, 10);
+    await collections.users?.updateOne(
+      { email: user.email },
+      { $set: { refreshToken: hashedNewRefreshToken } }
+    );
 
-      await collections.users?.updateOne(
-        { email: user.email },
-        { $set: { refreshToken: hashedNewRefreshToken } }
-      );
+    res.status(201).json({
+      message: "New access token generated",
+      token: newToken,
+      refreshToken: newRefreshToken,
+    });
+  } catch (error) {
+    res.status(500).send("An unexpected error occurred");
+  }
+});
 
-      res.status(201).json({
-        message: "New access token generated",
-        token: newToken,
-        refreshToken: newRefreshToken,
-      });
-    } catch (error) {
-      res.status(500).send("An unexpected error occurred");
+async function findUserByRefreshToken(refreshToken: string) {
+  const users = await collections.users?.find().toArray();
+
+  if (!users) {
+    return null;
+  }
+
+  for (let user of users) {
+    const isMatch = await bcrypt.compare(refreshToken, user.refreshToken);
+
+    if (isMatch) {
+      return user;
     }
   }
-);
+
+  return null;
+}
+
+export default findUserByRefreshToken;
 
 // GET Logout
 authRouter.get(
