@@ -43,6 +43,7 @@ matchRouter.get(
         {
           $project: {
             product_name: 1,
+            requesterId: 1,
             "requesterDetails.first_name": 1,
             "requesterDetails.last_name": 1,
           },
