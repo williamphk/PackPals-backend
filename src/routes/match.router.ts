@@ -138,7 +138,7 @@ matchRouter.post(
 
       // Update the match status to accepted
       const result = await collections.matches?.updateOne(query, {
-        $set: [{ status: "accepted" }, { requesteeId: req.user._id }],
+        $set: { status: "accepted", requesteeId: req.user._id },
       });
 
       result?.modifiedCount
@@ -147,6 +147,7 @@ matchRouter.post(
             .json({ message: "Match request accepted successfully" })
         : res.status(500).json({ message: "Failed to accept match request" });
     } catch (error) {
+      console.log(error);
       res.status(500).send("An unexpected error occurred");
     }
   }
