@@ -50,10 +50,14 @@ matchRouter.get(
       ];
 
       const matches = await collections.matches?.aggregate(pipeline).toArray();
-      console.log(matches);
-      matches
+
+      matches && matches.length > 0
         ? res.status(201).send(matches)
-        : res.status(404).send("No matches found");
+        : res
+            .status(200)
+            .send(
+              "No matches found currently. Don't worry! You can host a match below!"
+            );
     } catch (error) {
       res.status(500).send("An unexpected error occurred");
     }
@@ -165,7 +169,7 @@ matchRouter.post(
   async (req: Request, res: Response) => {
     try {
       const { product_name } = req.body;
-      console.log(req.user._id);
+
       const requester = req.user._id;
 
       // Create a new match object
@@ -175,8 +179,6 @@ matchRouter.post(
         requester,
         "pending"
       );
-
-      console.log(newMatch);
 
       // Store the match request in the database
       const result = await collections.matches?.insertOne(newMatch);
