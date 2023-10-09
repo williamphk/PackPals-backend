@@ -20,7 +20,10 @@ userRouter.get(
       const pipeline = [
         {
           $match: {
-            requesterId: new ObjectId(userId),
+            $or: [
+              { requesterId: new ObjectId(userId) },
+              { requesteeId: new ObjectId(userId) },
+            ],
             status: "accepted",
           },
         },
@@ -52,11 +55,7 @@ userRouter.get(
         ?.aggregate(pipeline)
         .toArray();
 
-      !recentMatches?.length
-        ? res
-            .status(404)
-            .json({ message: "No recent matches found for this user" })
-        : res.status(200).json(recentMatches);
+      res.status(200).json(recentMatches);
     } catch (error) {
       res.status(500).send("An unexpected error occurred");
     }
@@ -79,11 +78,7 @@ userRouter.get(
         })
         .toArray();
 
-      !onGoingMatches?.length
-        ? res
-            .status(404)
-            .json({ message: "No recent matches found for this user" })
-        : res.status(200).json(onGoingMatches);
+      res.status(200).json(onGoingMatches);
     } catch (error) {
       res.status(500).send("An unexpected error occurred");
     }
@@ -132,11 +127,7 @@ userRouter.get(
         ?.aggregate(pipeline)
         .toArray();
 
-      !mightLikeMatches?.length
-        ? res
-            .status(404)
-            .json({ message: "No recent matches found for this user" })
-        : res.status(200).json(mightLikeMatches);
+      res.status(200).json(mightLikeMatches);
     } catch (error) {
       res.status(500).send("An unexpected error occurred");
     }
