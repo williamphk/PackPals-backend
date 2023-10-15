@@ -39,12 +39,39 @@ userRouter.get(
           $unwind: "$requesteeDetails",
         },
         {
+          $lookup: {
+            from: "users",
+            localField: "requesteeId",
+            foreignField: "_id",
+            as: "requesteeDetails",
+          },
+        },
+        {
+          $unwind: "$requesteeDetails",
+        },
+        {
+          $lookup: {
+            from: "users",
+            localField: "requesterId",
+            foreignField: "_id",
+            as: "requesterDetails",
+          },
+        },
+        {
+          $unwind: "$requesterDetails",
+        },
+        {
           $project: {
             product_name: 1,
             created_date: 1,
+            requesteeId: 1,
             "requesteeDetails.first_name": 1,
             "requesteeDetails.last_name": 1,
             "requesteeDetails.email": 1,
+            requesterId: 1,
+            "requesterDetails.first_name": 1,
+            "requesterDetails.last_name": 1,
+            "requesterDetails.email": 1,
           },
         },
         {
