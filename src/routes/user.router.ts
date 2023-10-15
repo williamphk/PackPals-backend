@@ -36,6 +36,9 @@ userRouter.get(
           },
         },
         {
+          $unwind: "$requesteeDetails",
+        },
+        {
           $project: {
             product_name: 1,
             "requesteeDetails.first_name": 1,
@@ -44,9 +47,6 @@ userRouter.get(
         },
         {
           $sort: { created_date: -1 },
-        },
-        {
-          $limit: 10,
         },
       ];
 
@@ -108,6 +108,9 @@ userRouter.get(
           },
         },
         {
+          $unwind: "$requesterDetails",
+        },
+        {
           $project: {
             product_name: 1,
             "requesterDetails.first_name": 1,
@@ -116,9 +119,6 @@ userRouter.get(
         },
         {
           $sort: { created_date: -1 },
-        },
-        {
-          $limit: 10,
         },
       ];
 

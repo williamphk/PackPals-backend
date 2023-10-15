@@ -48,6 +48,9 @@ matchRouter.get(
             "requesterDetails.last_name": 1,
           },
         },
+        {
+          $sort: { created_date: -1 },
+        },
       ];
 
       const matches = await collections.matches?.aggregate(pipeline).toArray();
