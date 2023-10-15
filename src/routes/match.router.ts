@@ -205,3 +205,43 @@ matchRouter.post(
     }
   }
 );
+
+// DELETE match
+matchRouter.delete(
+  "/:matchId",
+  passport.authenticate("jwt", { session: false }),
+  async (req: Request, res: Response) => {
+    try {
+      const { matchId } = req.params;
+      const requester = req.user._id;
+      const query = { _id: new ObjectId(matchId) };
+
+      const match = await collections.matches?.findOne(query);
+
+      // Check if the match is created by the user
+      if (!match?.requesterId.equals(requester)) {
+        return res
+          .status(400)
+          .json({ message: "You cannot delete someone else's match request" });
+      }
+
+      // Check if the match is already accepted
+      if (match?.status === "accepted") {
+        return res
+          .status(400)
+          .json({ message: "You cannot delete an accepted match request" });
+      }
+
+      // Delete the match request
+      const result = await collections.matches?.deleteOne(query);
+
+      result?.deletedCount
+        ? res
+            .status(200)
+            .json({ message: "Match request deleted successfully" })
+        : res.status(500).json({ message: "Failed to delete match request" });
+    } catch (error) {
+      res.status(500).send("An unexpected error occurred");
+    }
+  }
+);

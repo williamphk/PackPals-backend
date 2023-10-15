@@ -43,6 +43,7 @@ userRouter.get(
             product_name: 1,
             "requesteeDetails.first_name": 1,
             "requesteeDetails.last_name": 1,
+            "requesteeDetails.email": 1,
           },
         },
         {
@@ -113,6 +114,7 @@ userRouter.get(
         {
           $project: {
             product_name: 1,
+            requesterId: 1,
             "requesterDetails.first_name": 1,
             "requesterDetails.last_name": 1,
           },
