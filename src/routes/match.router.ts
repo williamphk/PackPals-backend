@@ -145,11 +145,16 @@ matchRouter.post(
         $set: { status: "accepted", requesteeId: req.user._id },
       });
 
-      result?.modifiedCount
-        ? res
-            .status(201)
-            .json({ message: "Match request accepted successfully" })
-        : res.status(500).json({ message: "Failed to accept match request" });
+      if (result?.modifiedCount) {
+        // Emit the event for the match being accepted
+        req.io.emit("match-accepted", { matchId });
+
+        res
+          .status(201)
+          .json({ message: "Match request accepted successfully" });
+      } else {
+        res.status(500).json({ message: "Failed to accept match request" });
+      }
     } catch (error) {
       console.log(error);
       res.status(500).send("An unexpected error occurred");
