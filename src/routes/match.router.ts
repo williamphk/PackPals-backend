@@ -18,7 +18,7 @@ matchRouter.get(
     try {
       const { keyword } = req.params;
 
-      console.log(keyword);
+      //console.log(keyword);
 
       // Aggregation pipeline to find matches and then populate with requester's name
       const pipeline = [

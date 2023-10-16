@@ -71,7 +71,10 @@ io.on("connection", (socket: any) => {
   });
 
   socket.on("requestAccepted", (data: any) => {
-    console.log(data);
+    console.log("requestAccepted" + data.requesterId);
+    io.to(data.requesterId).emit("notification", {
+      message: "Your request has been accepted!",
+    });
   });
 
   socket.on("disconnect", () => {
