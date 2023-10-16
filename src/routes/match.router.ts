@@ -158,9 +158,11 @@ matchRouter.post(
         await collections.notifications?.insertOne(notification);
 
         // Emit the event for the match being accepted
-        req.io.to(match?.reqesterId).emit("notification", {
-          message: "Your request has been accepted!",
-        });
+        req.socketServer
+          .to(match?.requesterId.toString())
+          .emit("notification", {
+            message: "Your request has been accepted!",
+          });
 
         res
           .status(201)

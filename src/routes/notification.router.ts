@@ -1,11 +1,8 @@
 // External Dependencies
 import express, { Request, Response } from "express";
 const passport = require("passport");
-import { ObjectId } from "mongodb";
-import { body } from "express-validator";
 
 import { collections } from "../services/database.service";
-import Notification from "../models/notification";
 
 // Global Config
 export const notificationRouter = express.Router();

@@ -37,7 +37,7 @@ connectToDatabase()
     app.use(express.json());
 
     app.use((req, res, next) => {
-      req.io = io;
+      req.socketServer = io;
       next();
     });
 
@@ -68,10 +68,6 @@ io.on("connection", (socket: any) => {
   socket.on("joinRoom", (data: any) => {
     socket.join(data.userId);
     console.log(`User ${data.userId} joined room`);
-  });
-
-  socket.on("requestAccepted", (data: any) => {
-    console.log("requestAccepted" + data.requesterId);
   });
 
   socket.on("disconnect", () => {
