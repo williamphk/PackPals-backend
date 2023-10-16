@@ -6,6 +6,7 @@ import * as dotenv from "dotenv";
 export const collections: {
   users?: mongoDB.Collection;
   matches?: mongoDB.Collection;
+  notifications?: mongoDB.Collection;
 } = {};
 
 // Initialize Connection
@@ -15,7 +16,8 @@ export async function connectToDatabase() {
   if (
     !process.env.DB_CONN_STRING ||
     !process.env.USERS_COLLECTION_NAME ||
-    !process.env.MATCHES_COLLECTION_NAME
+    !process.env.MATCHES_COLLECTION_NAME ||
+    !process.env.NOTIFICATIONS_COLLECTION_NAME
   ) {
     throw new Error("Required environment variables are missing!");
   }
@@ -105,6 +107,36 @@ export async function connectToDatabase() {
     },
   });
 
+  await db.command({
+    collMod: process.env.NOTIFICATIONS_COLLECTION_NAME,
+    validator: {
+      $jsonSchema: {
+        bsonType: "object",
+        required: ["userId", "content", "seen", "created_date"],
+        additionalProperties: false,
+        properties: {
+          _id: {},
+          userId: {
+            bsonType: "objectId",
+            description: "'userId' is required and is a objectId",
+          },
+          content: {
+            bsonType: "string",
+            description: "'content' is required and is a string",
+          },
+          seen: {
+            bsonType: "bool",
+            description: "'seen' is required and is a boolean",
+          },
+          created_date: {
+            bsonType: "date",
+            description: "'created_date' is required and is a date",
+          },
+        },
+      },
+    },
+  });
+
   const usersCollection: mongoDB.Collection = db.collection(
     process.env.USERS_COLLECTION_NAME
   );
@@ -113,10 +145,15 @@ export async function connectToDatabase() {
     process.env.MATCHES_COLLECTION_NAME
   );
 
+  const notificationsCollection: mongoDB.Collection = db.collection(
+    process.env.NOTIFICATIONS_COLLECTION_NAME
+  );
+
   collections.users = usersCollection;
   collections.matches = matchesCollection;
+  collections.notifications = notificationsCollection;
 
   console.log(
-    `Successfully connected to database: ${db.databaseName} and collection: ${usersCollection.collectionName} ${matchesCollection.collectionName}`
+    `Successfully connected to database: ${db.databaseName} and collection: ${usersCollection.collectionName} ${matchesCollection.collectionName} ${notificationsCollection.collectionName}`
   );
 }
