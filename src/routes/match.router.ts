@@ -6,6 +6,7 @@ import { body } from "express-validator";
 
 import { collections } from "../services/database.service";
 import Match from "../models/match";
+import Notification from "../models/notification";
 
 // Global Config
 export const matchRouter = express.Router();
@@ -123,13 +124,13 @@ matchRouter.post(
   async (req: Request, res: Response) => {
     try {
       const { matchId } = req.params;
-      const requester = req.user._id;
+      const userId = req.user._id;
       const query = { _id: new ObjectId(matchId) };
 
       const match = await collections.matches?.findOne(query);
 
       // Check if the match is created by the user
-      if (match?.requesterId.equals(requester)) {
+      if (match?.requesterId.equals(userId)) {
         return res
           .status(400)
           .json({ message: "You cannot accept your own match request" });
@@ -146,8 +147,20 @@ matchRouter.post(
       });
 
       if (result?.modifiedCount) {
+        const notification = new Notification(
+          match?.requesterId,
+          "Your match request has been accepted!",
+          false,
+          new Date()
+        );
+
+        // Store the notification in the database
+        await collections.notifications?.insertOne(notification);
+
         // Emit the event for the match being accepted
-        req.io.emit("match-accepted", { matchId });
+        req.io.to(match?.reqesterId).emit("notification", {
+          message: "Your request has been accepted!",
+        });
 
         res
           .status(201)
