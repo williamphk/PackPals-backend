@@ -42,7 +42,10 @@ exports.collections = {};
 function connectToDatabase() {
     return __awaiter(this, void 0, void 0, function* () {
         dotenv.config();
-        if (!process.env.DB_CONN_STRING || !process.env.USERS_COLLECTION_NAME) {
+        if (!process.env.DB_CONN_STRING ||
+            !process.env.USERS_COLLECTION_NAME ||
+            !process.env.MATCHES_COLLECTION_NAME ||
+            !process.env.NOTIFICATIONS_COLLECTION_NAME) {
             throw new Error("Required environment variables are missing!");
         }
         const client = new mongoDB.MongoClient(process.env.DB_CONN_STRING);
@@ -79,6 +82,72 @@ function connectToDatabase() {
                             bsonType: "string",
                             description: "'password' is required and is a string",
                         },
+                        refreshToken: {
+                            bsonType: "string",
+                            description: "'refreshToken' is a string",
+                        },
+                        created_date: {
+                            bsonType: "date",
+                            description: "'created_date' is required and is a date",
+                        },
+                    },
+                },
+            },
+        });
+        yield db.command({
+            collMod: process.env.MATCHES_COLLECTION_NAME,
+            validator: {
+                $jsonSchema: {
+                    bsonType: "object",
+                    required: ["product_name", "created_date", "requesterId", "status"],
+                    additionalProperties: false,
+                    properties: {
+                        _id: {},
+                        product_name: {
+                            bsonType: "string",
+                            description: "'product_name' is required and is a string",
+                        },
+                        created_date: {
+                            bsonType: "date",
+                            description: "'created_date' is required and is a date",
+                        },
+                        requesterId: {
+                            bsonType: "objectId",
+                            description: "'requester' is required and is a objectId",
+                        },
+                        requesteeId: {
+                            bsonType: ["objectId", "null"],
+                            description: "'requesteeId' is null or a objectId",
+                        },
+                        status: {
+                            bsonType: "string",
+                            description: "'status' is required and is a string",
+                        },
+                    },
+                },
+            },
+        });
+        yield db.command({
+            collMod: process.env.NOTIFICATIONS_COLLECTION_NAME,
+            validator: {
+                $jsonSchema: {
+                    bsonType: "object",
+                    required: ["userId", "content", "seen", "created_date"],
+                    additionalProperties: false,
+                    properties: {
+                        _id: {},
+                        userId: {
+                            bsonType: "objectId",
+                            description: "'userId' is required and is a objectId",
+                        },
+                        content: {
+                            bsonType: "string",
+                            description: "'content' is required and is a string",
+                        },
+                        seen: {
+                            bsonType: "bool",
+                            description: "'seen' is required and is a boolean",
+                        },
                         created_date: {
                             bsonType: "date",
                             description: "'created_date' is required and is a date",
@@ -88,8 +157,12 @@ function connectToDatabase() {
             },
         });
         const usersCollection = db.collection(process.env.USERS_COLLECTION_NAME);
+        const matchesCollection = db.collection(process.env.MATCHES_COLLECTION_NAME);
+        const notificationsCollection = db.collection(process.env.NOTIFICATIONS_COLLECTION_NAME);
         exports.collections.users = usersCollection;
-        console.log(`Successfully connected to database: ${db.databaseName} and collection: ${usersCollection.collectionName}`);
+        exports.collections.matches = matchesCollection;
+        exports.collections.notifications = notificationsCollection;
+        console.log(`Successfully connected to database: ${db.databaseName} and collection: ${usersCollection.collectionName} ${matchesCollection.collectionName} ${notificationsCollection.collectionName}`);
     });
 }
 exports.connectToDatabase = connectToDatabase;
