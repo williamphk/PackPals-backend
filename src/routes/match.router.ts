@@ -128,6 +128,7 @@ matchRouter.post(
       const query = { _id: new ObjectId(matchId) };
 
       const match = await collections.matches?.findOne(query);
+      const user = await collections.users?.findOne({ _id: userId });
 
       // Check if the match is created by the user
       if (match?.requesterId.equals(userId)) {
@@ -149,7 +150,7 @@ matchRouter.post(
       if (result?.modifiedCount) {
         const notification = new Notification(
           match?.requesterId,
-          "Your match request has been accepted!",
+          `Your ${match?.product_name}'s match request has been accepted by ${user?.first_name} ${user?.last_name}!`,
           false,
           new Date()
         );

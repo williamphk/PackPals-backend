@@ -18,7 +18,7 @@ import { userRouter } from "./routes/user.router";
 // Global Config
 const app: Application = express();
 
-const PORT: number = 3001;
+const PORT = process.env.PORT || 3001;
 
 const httpServer = http.createServer(app);
 const io = socketIo(httpServer, {
