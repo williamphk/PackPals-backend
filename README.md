@@ -38,4 +38,5 @@ The API consists of the following endpoints:
 - [Node.js](https://nodejs.org/en) - JavaScript runtime
 - [Express](https://expressjs.com/) - Web framework for Node.js
 - [MongoDB](https://www.mongodb.com/) - NoSQL database
-- [Socket.io](https://socket.io/) - Realtime Communication channel
+- [Socket.io](https://socket.io/) - Realtime communication channel
+- [TypeScript](https://www.typescriptlang.org/) - Main Programming Language
