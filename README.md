@@ -32,3 +32,10 @@ The API consists of the following endpoints:
 ### Socket.io
 - Create a private room for each user
 - Send a notification to the user whose matches are being accepted
+
+## Built With
+
+- [Node.js](https://nodejs.org/en) - JavaScript runtime
+- [Express](https://expressjs.com/) - Web framework for Node.js
+- [MongoDB](https://www.mongodb.com/) - NoSQL database
+- [Socket.io](https://socket.io/) - Realtime Communication channel
