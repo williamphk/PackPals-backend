@@ -28,3 +28,7 @@ The API consists of the following endpoints:
 ### Notifications
 - Retrieve all unread notifications: `/notifications` (GET)
 - Read all notifications: `/notifications` (PUT)
+
+### Socket.io
+- Create a private room for each user
+- Send a notification to the user whose matches are being accepted
