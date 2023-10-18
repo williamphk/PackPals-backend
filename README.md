@@ -25,3 +25,6 @@ The API consists of the following endpoints:
 - Retrieve ongoing matches: `/users/:userId/ongoing` (GET)
 - Retrieve you might like matches: `/users/:userId/like` (GET)
 
+### Notifications
+- Retrieve all unread notifications: `/notifications` (GET)
+- Read all notifications: `/notifications` (PUT)
