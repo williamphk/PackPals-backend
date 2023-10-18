@@ -162,7 +162,7 @@ matchRouter.post(
         req.socketServer
           .to(match?.requesterId.toString())
           .emit("notification", {
-            message: "Your request has been accepted!",
+            message: `Your ${match?.product_name}'s match request has been accepted by ${user?.first_name} ${user?.last_name}!`,
           });
 
         res
