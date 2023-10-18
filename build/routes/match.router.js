@@ -143,7 +143,7 @@ exports.matchRouter.post("/:matchId/accept", passport.authenticate("jwt", { sess
             req.socketServer
                 .to(match === null || match === void 0 ? void 0 : match.requesterId.toString())
                 .emit("notification", {
-                message: "Your request has been accepted!",
+                message: `Your ${match === null || match === void 0 ? void 0 : match.product_name}'s match request has been accepted by ${user === null || user === void 0 ? void 0 : user.first_name} ${user === null || user === void 0 ? void 0 : user.last_name}!`,
             });
             res
                 .status(201)
