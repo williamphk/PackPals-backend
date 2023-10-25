@@ -15,6 +15,7 @@ notificationRouter.get(
     try {
       const notifications = await collections.notifications
         ?.find({ userId: req.user._id, seen: false })
+        .sort({ created_date: -1 })
         .toArray();
 
       notifications && notifications.length > 0
