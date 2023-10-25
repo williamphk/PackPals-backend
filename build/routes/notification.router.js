@@ -23,7 +23,7 @@ exports.notificationRouter = express_1.default.Router();
 exports.notificationRouter.get("/", passport.authenticate("jwt", { session: false }), (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     var _a;
     try {
-        const notifications = yield ((_a = database_service_1.collections.notifications) === null || _a === void 0 ? void 0 : _a.find({ userId: req.user._id, seen: false }).toArray());
+        const notifications = yield ((_a = database_service_1.collections.notifications) === null || _a === void 0 ? void 0 : _a.find({ userId: req.user._id, seen: false }).sort({ created_date: -1 }).toArray());
         notifications && notifications.length > 0
             ? res.status(201).send(notifications)
             : res.status(200).send("No notifications found");
