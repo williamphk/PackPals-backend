@@ -14,6 +14,7 @@ configurePassport(passport);
 import { authRouter } from "./routes/auth.router";
 import { matchRouter } from "./routes/match.router";
 import { userRouter } from "./routes/user.router";
+import { notificationRouter } from "./routes/notification.router";
 
 // Global Config
 const app: Application = express();
@@ -44,6 +45,7 @@ connectToDatabase()
     app.use("/auth", authRouter);
     app.use("/matches", matchRouter);
     app.use("/users", userRouter);
+    app.use("/notifications", notificationRouter);
 
     app.get(
       "/protected",

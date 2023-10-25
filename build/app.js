@@ -16,6 +16,7 @@ const passport_config_1 = __importDefault(require("./passport-config"));
 const auth_router_1 = require("./routes/auth.router");
 const match_router_1 = require("./routes/match.router");
 const user_router_1 = require("./routes/user.router");
+const notification_router_1 = require("./routes/notification.router");
 // Global Config
 const app = (0, express_1.default)();
 const PORT = 443;
@@ -39,6 +40,7 @@ app.use(cors());
     app.use("/auth", auth_router_1.authRouter);
     app.use("/matches", match_router_1.matchRouter);
     app.use("/users", user_router_1.userRouter);
+    app.use("/notifications", notification_router_1.notificationRouter);
     app.get("/protected", passport.authenticate("jwt", { session: false }), (req, res) => {
         res.send("You have accessed a protected route!");
     });
