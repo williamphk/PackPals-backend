@@ -18,9 +18,7 @@ notificationRouter.get(
         .sort({ created_date: -1 })
         .toArray();
 
-      notifications && notifications.length > 0
-        ? res.status(201).send(notifications)
-        : res.status(200).send("No notifications found");
+      res.status(200).json(notifications);
     } catch (error) {
       res.status(500).send(error);
     }
