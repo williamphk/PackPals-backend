@@ -19,11 +19,11 @@ const passport = require("passport");
 const database_service_1 = require("../services/database.service");
 // Global Config
 exports.notificationRouter = express_1.default.Router();
-// GET list of unseen notifications
+// GET list of notifications
 exports.notificationRouter.get("/", passport.authenticate("jwt", { session: false }), (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     var _a;
     try {
-        const notifications = yield ((_a = database_service_1.collections.notifications) === null || _a === void 0 ? void 0 : _a.find({ userId: req.user._id, seen: false }).sort({ created_date: -1 }).toArray());
+        const notifications = yield ((_a = database_service_1.collections.notifications) === null || _a === void 0 ? void 0 : _a.find({ userId: req.user._id }).sort({ created_date: -1 }).toArray());
         notifications && notifications.length > 0
             ? res.status(201).send(notifications)
             : res.status(200).send("No notifications found");
@@ -32,16 +32,30 @@ exports.notificationRouter.get("/", passport.authenticate("jwt", { session: fals
         res.status(500).send(error);
     }
 }));
+// GET number of unseen notifications
+exports.notificationRouter.get("/count", passport.authenticate("jwt", { session: false }), (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    var _b;
+    try {
+        const count = yield ((_b = database_service_1.collections === null || database_service_1.collections === void 0 ? void 0 : database_service_1.collections.notifications) === null || _b === void 0 ? void 0 : _b.countDocuments({
+            userId: req.user._id,
+            seen: false,
+        }));
+        res.status(201).send({ count });
+    }
+    catch (error) {
+        res.status(500).send(error);
+    }
+}));
 // PUT read all unseen notifications
 exports.notificationRouter.put("/accept", passport.authenticate("jwt", { session: false }), (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    var _b, _c;
+    var _c, _d;
     try {
-        const notification = yield ((_b = database_service_1.collections.notifications) === null || _b === void 0 ? void 0 : _b.find({
+        const notification = yield ((_c = database_service_1.collections.notifications) === null || _c === void 0 ? void 0 : _c.find({
             userId: req.user._id,
             seen: false,
         }).toArray());
         if (notification && notification.length > 0) {
-            const result = yield ((_c = database_service_1.collections.notifications) === null || _c === void 0 ? void 0 : _c.updateMany({ userId: req.user._id, seen: false }, { $set: { seen: true } }));
+            const result = yield ((_d = database_service_1.collections.notifications) === null || _d === void 0 ? void 0 : _d.updateMany({ userId: req.user._id, seen: false }, { $set: { seen: true } }));
             if (result === null || result === void 0 ? void 0 : result.modifiedCount) {
                 res.status(201).json({ message: "Notifications successfully seen" });
             }

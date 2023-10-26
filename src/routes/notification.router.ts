@@ -7,20 +7,38 @@ import { collections } from "../services/database.service";
 // Global Config
 export const notificationRouter = express.Router();
 
-// GET list of unseen notifications
+// GET list of notifications
 notificationRouter.get(
   "/",
   passport.authenticate("jwt", { session: false }),
   async (req: Request, res: Response) => {
     try {
       const notifications = await collections.notifications
-        ?.find({ userId: req.user._id, seen: false })
+        ?.find({ userId: req.user._id })
         .sort({ created_date: -1 })
         .toArray();
 
       notifications && notifications.length > 0
         ? res.status(201).send(notifications)
         : res.status(200).send("No notifications found");
+    } catch (error) {
+      res.status(500).send(error);
+    }
+  }
+);
+
+// GET number of unseen notifications
+notificationRouter.get(
+  "/count",
+  passport.authenticate("jwt", { session: false }),
+  async (req: Request, res: Response) => {
+    try {
+      const count = await collections?.notifications?.countDocuments({
+        userId: req.user._id,
+        seen: false,
+      });
+
+      res.status(201).send({ count });
     } catch (error) {
       res.status(500).send(error);
     }
