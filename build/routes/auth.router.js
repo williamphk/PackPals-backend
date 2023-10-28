@@ -102,13 +102,25 @@ exports.authRouter.post("/register", registerValidation, (req, res) => __awaiter
 }));
 // POST Login
 const loginValidation = [
-    (0, express_validator_1.body)("email").isEmail().withMessage("Enter a valid email address."),
+    (0, express_validator_1.body)("email")
+        .isEmail()
+        .withMessage("Enter a valid email address.")
+        .toLowerCase()
+        .normalizeEmail()
+        .custom((value) => __awaiter(void 0, void 0, void 0, function* () {
+        var _c;
+        const query = { email: value };
+        const user = yield ((_c = database_service_1.collections.users) === null || _c === void 0 ? void 0 : _c.findOne(query));
+        if (!user) {
+            return Promise.reject("Invalid email or password");
+        }
+    })),
     (0, express_validator_1.body)("password")
         .isLength({ min: 8 })
         .withMessage("Password must be at least 8 characters long."),
 ];
 exports.authRouter.post("/login", loginValidation, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    var _c, _d;
+    var _d, _e;
     try {
         const { email, password } = req.body;
         const errors = (0, express_validator_1.validationResult)(req);
@@ -116,28 +128,27 @@ exports.authRouter.post("/login", loginValidation, (req, res) => __awaiter(void 
             return res.status(401).json({ errors: errors.array() });
         }
         const query = { email: email };
-        const user = yield ((_c = database_service_1.collections.users) === null || _c === void 0 ? void 0 : _c.findOne(query));
-        if (!user) {
-            return res.status(401).json({ message: "Invalid email or password" });
-        }
-        const passwordMatch = yield bcrypt.compare(password, user.hashed_password);
+        const user = yield ((_d = database_service_1.collections.users) === null || _d === void 0 ? void 0 : _d.findOne(query));
+        const passwordMatch = yield bcrypt.compare(password, user === null || user === void 0 ? void 0 : user.hashed_password);
         if (!passwordMatch) {
-            return res.status(401).json({ message: "Invalid email or password" });
+            return res
+                .status(401)
+                .json({ errors: [{ msg: "Invalid email or password" }] });
         }
-        const token = jwt.sign({ email: user.email }, process.env.JWT_SECRET, {
+        const token = jwt.sign({ email: user === null || user === void 0 ? void 0 : user.email }, process.env.JWT_SECRET, {
             expiresIn: "1h",
         });
         const refreshToken = crypto.randomBytes(64).toString("hex");
         const hashedRefreshToken = yield bcrypt.hash(refreshToken, 10);
-        yield ((_d = database_service_1.collections.users) === null || _d === void 0 ? void 0 : _d.updateOne({ email: user.email }, { $set: { refreshToken: hashedRefreshToken } }));
+        yield ((_e = database_service_1.collections.users) === null || _e === void 0 ? void 0 : _e.updateOne({ email: user === null || user === void 0 ? void 0 : user.email }, { $set: { refreshToken: hashedRefreshToken } }));
         res.status(201).json({
             message: "Logged in successfully",
             token: token,
             refreshToken: refreshToken,
-            id: user._id,
-            first_name: user.first_name,
-            last_name: user.last_name,
-            email: user.email,
+            id: user === null || user === void 0 ? void 0 : user._id,
+            first_name: user === null || user === void 0 ? void 0 : user.first_name,
+            last_name: user === null || user === void 0 ? void 0 : user.last_name,
+            email: user === null || user === void 0 ? void 0 : user.email,
         });
     }
     catch (error) {
@@ -146,7 +157,7 @@ exports.authRouter.post("/login", loginValidation, (req, res) => __awaiter(void 
 }));
 // POST Token
 exports.authRouter.post("/token", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    var _e;
+    var _f;
     try {
         const { refreshToken } = req.body;
         const user = yield findUserByRefreshToken(refreshToken);
@@ -158,7 +169,7 @@ exports.authRouter.post("/token", (req, res) => __awaiter(void 0, void 0, void 0
         });
         const newRefreshToken = crypto.randomBytes(64).toString("hex");
         const hashedNewRefreshToken = yield bcrypt.hash(newRefreshToken, 10);
-        yield ((_e = database_service_1.collections.users) === null || _e === void 0 ? void 0 : _e.updateOne({ email: user.email }, { $set: { refreshToken: hashedNewRefreshToken } }));
+        yield ((_f = database_service_1.collections.users) === null || _f === void 0 ? void 0 : _f.updateOne({ email: user.email }, { $set: { refreshToken: hashedNewRefreshToken } }));
         res.status(201).json({
             message: "New access token generated",
             token: newToken,
@@ -204,11 +215,11 @@ exports.authRouter.get("/logout", passport.authenticate("jwt", { session: false 
 }));
 // DELETE Profile
 exports.authRouter.delete("/profile/:userId", passport.authenticate("jwt", { session: false }), (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    var _f;
+    var _g;
     try {
         const { userId } = req.params;
         const query = { _id: new mongodb_1.ObjectId(userId) };
-        const result = yield ((_f = database_service_1.collections.users) === null || _f === void 0 ? void 0 : _f.deleteOne(query));
+        const result = yield ((_g = database_service_1.collections.users) === null || _g === void 0 ? void 0 : _g.deleteOne(query));
         if (result && result.deletedCount) {
             res.status(202).send(`Successfully removed user with id ${userId}`);
         }

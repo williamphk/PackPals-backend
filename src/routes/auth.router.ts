@@ -105,7 +105,18 @@ authRouter.post(
 
 // POST Login
 const loginValidation = [
-  body("email").isEmail().withMessage("Enter a valid email address."),
+  body("email")
+    .isEmail()
+    .withMessage("Enter a valid email address.")
+    .toLowerCase()
+    .normalizeEmail()
+    .custom(async (value) => {
+      const query = { email: value };
+      const user = await collections.users?.findOne(query);
+      if (!user) {
+        return Promise.reject("Invalid email or password");
+      }
+    }),
   body("password")
     .isLength({ min: 8 })
     .withMessage("Password must be at least 8 characters long."),
@@ -126,20 +137,18 @@ authRouter.post(
       const query = { email: email };
       const user = await collections.users?.findOne(query);
 
-      if (!user) {
-        return res.status(401).json({ message: "Invalid email or password" });
-      }
-
       const passwordMatch = await bcrypt.compare(
         password,
-        user.hashed_password
+        user?.hashed_password
       );
 
       if (!passwordMatch) {
-        return res.status(401).json({ message: "Invalid email or password" });
+        return res
+          .status(401)
+          .json({ errors: [{ msg: "Invalid email or password" }] });
       }
 
-      const token = jwt.sign({ email: user.email }, process.env.JWT_SECRET, {
+      const token = jwt.sign({ email: user?.email }, process.env.JWT_SECRET, {
         expiresIn: "1h",
       });
 
@@ -147,7 +156,7 @@ authRouter.post(
       const hashedRefreshToken = await bcrypt.hash(refreshToken, 10);
 
       await collections.users?.updateOne(
-        { email: user.email },
+        { email: user?.email },
         { $set: { refreshToken: hashedRefreshToken } }
       );
 
@@ -155,10 +164,10 @@ authRouter.post(
         message: "Logged in successfully",
         token: token,
         refreshToken: refreshToken,
-        id: user._id,
-        first_name: user.first_name,
-        last_name: user.last_name,
-        email: user.email,
+        id: user?._id,
+        first_name: user?.first_name,
+        last_name: user?.last_name,
+        email: user?.email,
       });
     } catch (error) {
       res.status(500).send("An unexpected error occurred");
