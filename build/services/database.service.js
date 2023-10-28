@@ -61,6 +61,7 @@ function connectToDatabase() {
                         "last_name",
                         "email",
                         "hashed_password",
+                        "postal_code",
                         "created_date",
                     ],
                     additionalProperties: false,
@@ -81,6 +82,10 @@ function connectToDatabase() {
                         hashed_password: {
                             bsonType: "string",
                             description: "'password' is required and is a string",
+                        },
+                        postal_code: {
+                            bsonType: "string",
+                            description: "'postal_code' is required and is a string",
                         },
                         refreshToken: {
                             bsonType: "string",

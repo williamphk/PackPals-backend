@@ -15,26 +15,69 @@ export const authRouter = express.Router();
 
 // POST Register
 const registerValidation = [
-  body("first_name").notEmpty().withMessage("First name is required."),
-  body("last_name").notEmpty().withMessage("Last name is required."),
-  body("email").isEmail().withMessage("Enter a valid email address."),
+  body("first_name")
+    .notEmpty()
+    .withMessage("First name is required.")
+    .isLength({ max: 50 })
+    .withMessage("First name must be less than 50 characters.")
+    .isAlpha()
+    .withMessage("First name must be alphabetic.")
+    .trim()
+    .escape()
+    .toLowerCase(),
+  body("last_name")
+    .notEmpty()
+    .withMessage("Last name is required.")
+    .isLength({ max: 50 })
+    .withMessage("Last name must be less than 50 characters.")
+    .isAlpha()
+    .withMessage("Last name must be alphabetic.")
+    .trim()
+    .escape()
+    .toLowerCase(),
+  body("email")
+    .isEmail()
+    .withMessage("Enter a valid email address.")
+    .custom(async (value) => {
+      const query = { email: value };
+      const user = await collections.users?.findOne(query);
+      if (user) {
+        return Promise.reject("Email already in use");
+      }
+    })
+    .toLowerCase()
+    .normalizeEmail(),
   body("password")
     .isLength({ min: 8 })
     .withMessage("Password must be at least 8 characters long."),
 ];
+body("postal_code")
+  .matches(/^[A-Za-z]\d[A-Za-z][ -]?\d[A-Za-z]\d$/)
+  .withMessage("Enter a valid postal code.")
+  .trim()
+  .escape()
+  .toUpperCase();
 
 authRouter.post(
   "/register",
   registerValidation,
   async (req: Request, res: Response) => {
     try {
-      const { first_name, last_name, email, password, created_date } = req.body;
+      const {
+        first_name,
+        last_name,
+        email,
+        password,
+        postal_code,
+        created_date,
+      } = req.body;
 
       const newUser: User = {
         first_name,
         last_name,
         email,
         hashed_password: password,
+        postal_code,
         created_date,
       };
 
