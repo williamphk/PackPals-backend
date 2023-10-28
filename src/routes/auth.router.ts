@@ -118,6 +118,11 @@ authRouter.post(
     try {
       const { email, password } = req.body;
 
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        return res.status(401).json({ errors: errors.array() });
+      }
+
       const query = { email: email };
       const user = await collections.users?.findOne(query);
 

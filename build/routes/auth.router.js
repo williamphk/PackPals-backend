@@ -111,6 +111,10 @@ exports.authRouter.post("/login", loginValidation, (req, res) => __awaiter(void 
     var _c, _d;
     try {
         const { email, password } = req.body;
+        const errors = (0, express_validator_1.validationResult)(req);
+        if (!errors.isEmpty()) {
+            return res.status(401).json({ errors: errors.array() });
+        }
         const query = { email: email };
         const user = yield ((_c = database_service_1.collections.users) === null || _c === void 0 ? void 0 : _c.findOne(query));
         if (!user) {
