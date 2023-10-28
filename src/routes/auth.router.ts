@@ -5,7 +5,7 @@ const jwt = require("jsonwebtoken");
 const crypto = require("crypto");
 const passport = require("passport");
 import { ObjectId } from "mongodb";
-import { body } from "express-validator";
+import { body, validationResult } from "express-validator";
 
 import { collections } from "../services/database.service";
 import User from "../models/user";
@@ -50,13 +50,13 @@ const registerValidation = [
   body("password")
     .isLength({ min: 8 })
     .withMessage("Password must be at least 8 characters long."),
+  body("postal_code")
+    .matches(/^[A-Za-z]\d[A-Za-z][ -]?\d[A-Za-z]\d$/)
+    .withMessage("Enter a valid postal code.")
+    .trim()
+    .escape()
+    .toUpperCase(),
 ];
-body("postal_code")
-  .matches(/^[A-Za-z]\d[A-Za-z][ -]?\d[A-Za-z]\d$/)
-  .withMessage("Enter a valid postal code.")
-  .trim()
-  .escape()
-  .toUpperCase();
 
 authRouter.post(
   "/register",
@@ -71,6 +71,11 @@ authRouter.post(
         postal_code,
         created_date,
       } = req.body;
+
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        return res.status(401).json({ errors: errors.array() });
+      }
 
       const newUser: User = {
         first_name,

@@ -62,17 +62,21 @@ const registerValidation = [
     (0, express_validator_1.body)("password")
         .isLength({ min: 8 })
         .withMessage("Password must be at least 8 characters long."),
+    (0, express_validator_1.body)("postal_code")
+        .matches(/^[A-Za-z]\d[A-Za-z][ -]?\d[A-Za-z]\d$/)
+        .withMessage("Enter a valid postal code.")
+        .trim()
+        .escape()
+        .toUpperCase(),
 ];
-(0, express_validator_1.body)("postal_code")
-    .matches(/^[A-Za-z]\d[A-Za-z][ -]?\d[A-Za-z]\d$/)
-    .withMessage("Enter a valid postal code.")
-    .trim()
-    .escape()
-    .toUpperCase();
 exports.authRouter.post("/register", registerValidation, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     var _b;
     try {
         const { first_name, last_name, email, password, postal_code, created_date, } = req.body;
+        const errors = (0, express_validator_1.validationResult)(req);
+        if (!errors.isEmpty()) {
+            return res.status(401).json({ errors: errors.array() });
+        }
         const newUser = {
             first_name,
             last_name,
