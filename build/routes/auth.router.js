@@ -115,9 +115,7 @@ const loginValidation = [
             return Promise.reject("Invalid email or password");
         }
     })),
-    (0, express_validator_1.body)("password")
-        .isLength({ min: 8 })
-        .withMessage("Password must be at least 8 characters long."),
+    (0, express_validator_1.body)("password").notEmpty().withMessage("Password is required."),
 ];
 exports.authRouter.post("/login", loginValidation, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     var _d, _e;
