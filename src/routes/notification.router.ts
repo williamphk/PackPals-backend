@@ -66,8 +66,9 @@ notificationRouter.put(
         } else {
           res.status(500).json({ message: "Failed to update notification" });
         }
+      } else {
+        res.status(200).json({ message: "No notifications to update" });
       }
-      res.status(200).json({ message: "No notifications to update" });
     } catch (error) {
       res.status(500).send(error);
     }
