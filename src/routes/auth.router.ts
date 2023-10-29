@@ -117,9 +117,7 @@ const loginValidation = [
         return Promise.reject("Invalid email or password");
       }
     }),
-  body("password")
-    .isLength({ min: 8 })
-    .withMessage("Password must be at least 8 characters long."),
+  body("password").notEmpty().withMessage("Password is required."),
 ];
 
 authRouter.post(
