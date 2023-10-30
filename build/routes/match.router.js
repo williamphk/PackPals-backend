@@ -55,6 +55,7 @@ exports.matchRouter.get("/:keyword", passport.authenticate("jwt", { session: fal
                     requesterId: 1,
                     "requesterDetails.first_name": 1,
                     "requesterDetails.last_name": 1,
+                    "requesterDetails.postal_code": 1,
                 },
             },
             {
