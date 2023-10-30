@@ -147,6 +147,7 @@ exports.authRouter.post("/login", loginValidation, (req, res) => __awaiter(void 
             first_name: user === null || user === void 0 ? void 0 : user.first_name,
             last_name: user === null || user === void 0 ? void 0 : user.last_name,
             email: user === null || user === void 0 ? void 0 : user.email,
+            postal_code: user === null || user === void 0 ? void 0 : user.postal_code,
         });
     }
     catch (error) {

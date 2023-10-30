@@ -166,6 +166,7 @@ authRouter.post(
         first_name: user?.first_name,
         last_name: user?.last_name,
         email: user?.email,
+        postal_code: user?.postal_code,
       });
     } catch (error) {
       res.status(500).send("An unexpected error occurred");
